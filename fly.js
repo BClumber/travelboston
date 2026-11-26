@@ -37,7 +37,7 @@ function makeCockpit(heli){
   g.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});g.userData={pfd,nd,yoke:yk,thr:th};return g;
 }
 function buildRoute(dest,heli){
-  const A=APT[dest],W=[],add=(x,y,z,name,gate)=>W.push({x,y:heli?Math.max(55,y*.5):y,z,name,gate});
+  const A=APT[dest],W=[],add=(x,y,z,name,gate)=>W.push({x,y:heli?Math.max(55,y*.5,hillH(x,z)+45):y,z,name,gate});
   if(heli)add(380,150,-420,'the harbor');else add(545,150,150,'the harbor');
   add(150,300,70,'the South Station tower');add(-600,330,340,'the Back Bay towers');
   if(dest==='norwood'){const a=flatP(FHd-140,420);add(a.x,230,a.z,'the Arboretum hill');}
@@ -90,8 +90,10 @@ function updFly(dt){
   const thr=levF.v,wasG=F.onG;
   if(heli){
     F.rpm+=clamp(((thr>.06||!F.onG)&&!F.done?1:0)-F.rpm,-dt*.25,dt*.45);
-    const wantAlt=landing?(dist<70?0:60):W.y;let vyT;
-    if(thr>.8)vyT=(thr-.8)/.2*13+2;else if(thr<.28)vyT=-(.28-thr)/.28*11-1;else vyT=clamp((wantAlt-F.alt)*.5,-9,10);
+    let wantAlt=landing?(dist<70?0:60):W.y;{const sy=Math.sin(F.yaw),cy=Math.cos(F.yaw),gh=Math.max(hillH(F.x,F.z),hillH(F.x+sy*70,F.z+cy*70),hillH(F.x+sy*150,F.z+cy*150));if(gh>3)wantAlt=Math.max(wantAlt,gh+40);}let vyT;
+    const apOn=F.auto&&joy.id===null&&thr>.06;   /* autopilot holds the height itself, whatever the lever says */
+    if(apOn)vyT=clamp((wantAlt-F.alt)*.5,-9,10);else if(thr>.8)vyT=(thr-.8)/.2*13+2;else if(thr<.28)vyT=-(.28-thr)/.28*11-1;else vyT=clamp((wantAlt-F.alt)*.5,-9,10);
+    if(F.alt>300){vyT=Math.min(vyT,(330-F.alt)*.4);if(!F.hiT||now-F.hiT>9000){F.hiT=now;msg('☁️ High enough! Ease the lever down a little.',3000);}}
     if(F.rpm<.9||F.done)vyT=Math.min(vyT,F.onG?0:-3);if(F.alt<6)vyT=Math.max(vyT,-2.6);
     F.vyPrev=F.vy;F.vy+=(vyT-F.vy)*Math.min(1,dt*2);F.alt=Math.max(0,F.alt+F.vy*dt);F.onG=F.alt<=.01;if(F.onG)F.vy=Math.max(0,F.vy);if(F.alt>15)F.flew=true;
     if(F.auto&&joy.id===null&&!F.onG&&!F.done){jx=clamp(-dh*1.5,-1,1);jy=dist<40?0:clamp(dist/200,.15,.9)*(Math.abs(dh)>1?.3:1);}
