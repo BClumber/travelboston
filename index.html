@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Boston Trains & Planes</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#8fc7ee;font-family:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;color:#1d2440;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hide{display:none!important}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;background:linear-gradient(#0d1b4488,#0d1b4411 45%,#0d1b4499)}
+#menu h1{margin:0;font-size:clamp(30px,8vw,56px);line-height:1;color:#fff;text-align:center;text-shadow:0 4px 0 #5b2a86,0 8px 18px #0008}
+#menu p{margin:0;color:#fff;font-size:16px;text-shadow:0 2px 6px #000a;text-align:center}
+#cards{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;width:100%;max-width:820px}
+.card{flex:1 1 200px;max-width:260px;min-height:120px;border-radius:26px;padding:12px 10px;background:#fff;box-shadow:0 7px 0 #0003,0 12px 24px #0004;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.card:active{transform:translateY(5px);box-shadow:0 2px 0 #0003}
+.card div{display:flex;flex-direction:column;align-items:center}.card .e{font-size:50px;line-height:1.1}.card b{font-size:22px;line-height:1.1}.card span{font-size:13px;color:#5a6282;font-weight:600}
+.card.t{border-bottom:8px solid #7b2d8e}.card.f{border-bottom:8px solid #1f7ae0}.card.m{border-bottom:8px solid #e2572b}
+@media (orientation:portrait){.card{flex-basis:100%;max-width:340px;flex-direction:row;min-height:84px;gap:14px;justify-content:flex-start;padding-left:20px}.card .e{font-size:44px}.card div{display:flex;flex-direction:column;align-items:flex-start}}
+.rb{position:fixed;width:58px;height:58px;border-radius:50%;background:#fff;font-size:28px;box-shadow:0 5px 0 #0003,0 8px 14px #0003;display:flex;align-items:center;justify-content:center;z-index:5}
+.rb:active{transform:translateY(4px);box-shadow:0 1px 0 #0003}
+#home{top:10px;left:10px}#mute{top:10px;left:78px}#camb{top:76px;right:10px}
+#stars{position:fixed;top:10px;right:10px;height:58px;padding:0 18px;border-radius:29px;background:#fff;font-size:26px;font-weight:800;display:flex;align-items:center;gap:6px;box-shadow:0 5px 0 #0003;z-index:5}
+#msg{position:fixed;top:78px;left:50%;transform:translateX(-50%);max-width:calc(100% - 150px);padding:8px 22px;border-radius:22px;background:#1d2440ee;color:#fff;font-size:clamp(18px,4.6vw,28px);font-weight:800;text-align:center;line-height:1.15;transition:opacity .4s;pointer-events:none;z-index:4}
+.big{position:fixed;width:84px;height:84px;border-radius:50%;font-size:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #0004,0 10px 16px #0003;z-index:5}
+.big:active{transform:translateY(5px);box-shadow:0 1px 0 #0004}
+#horn{left:14px;bottom:22px;background:#ffd23f}#bell{left:110px;bottom:22px;background:#ff8a5b}
+.lever{position:fixed;right:16px;bottom:20px;width:84px;height:230px;border-radius:42px;background:linear-gradient(#35c46a,#f6c21c 55%,#e23d3d);box-shadow:inset 0 0 0 6px #fff,0 6px 14px #0005;z-index:5;touch-action:none}
+.lever .knob{position:absolute;left:8px;bottom:0;width:68px;height:68px;border-radius:50%;background:#fff;border:6px solid #1d2440;display:flex;align-items:center;justify-content:center;font-size:30px;pointer-events:none;box-shadow:0 4px 8px #0005}
+.lever i{position:absolute;left:-34px;font-style:normal;font-size:26px;pointer-events:none}
+.lever i.a{top:6px}.lever i.b{bottom:8px}
+@media (max-height:520px){.lever{height:180px}}
+@media (orientation:portrait){#bell{left:14px;bottom:120px}}
+#sw{position:fixed;top:76px;left:10px;padding:5px 14px;border-radius:16px;background:#fff;font-weight:800;font-size:16px;z-index:5;box-shadow:0 4px 0 #0003}#sw.on{background:#ffd23f}
+#dash{position:fixed;left:50%;bottom:0;transform:translateX(-50%);background:#232a3dee;color:#fff;border-radius:26px 26px 0 0;padding:4px 26px 6px;text-align:center;border:4px solid #4b556e;border-bottom:0;z-index:3}
+#dash b{font-size:40px;line-height:1;display:block;color:#ffe45e;min-width:70px}#dash span{font-size:13px;letter-spacing:2px}
+#joy{position:fixed;left:18px;bottom:22px;width:150px;height:150px;border-radius:50%;background:#ffffff66;border:5px solid #fff;z-index:5;touch-action:none}
+#joy .knob{position:absolute;left:39px;top:39px;width:62px;height:62px;border-radius:50%;background:#1f7ae0;border:5px solid #fff;pointer-events:none;box-shadow:0 4px 8px #0005}
+#arrow{position:fixed;top:144px;left:50%;margin-left:-34px;width:68px;height:68px;border-radius:50%;background:#ffd23f;border:5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;box-shadow:0 5px 12px #0005;z-index:4;pointer-events:none}
+#pick{position:fixed;inset:0;z-index:6;background:#0d1b44cc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:70px 12px 12px;overflow:auto}
+#pick h2{margin:0;color:#fff;font-size:22px}
+.prow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.prow button{min-width:120px;padding:8px 12px;border-radius:20px;background:#fff;display:flex;flex-direction:column;align-items:center;box-shadow:0 5px 0 #0004;font-size:17px;line-height:1.15}
+.prow button span{font-size:38px;line-height:1.1}.prow button i{font-style:normal;font-size:13px;color:#5a6282}
+.prow button.on{background:#ffd23f;outline:4px solid #fff}
+#pGo{margin-top:8px;padding:12px 30px;border-radius:28px;background:#35c46a;color:#fff;font-size:26px;font-weight:800;box-shadow:0 6px 0 #1c7a40}
+#gear{position:fixed;top:112px;left:10px;padding:1px 12px;border-radius:14px;background:#35c46a;color:#fff;font-weight:800;font-size:14px;z-index:4}
+#dist{position:fixed;top:140px;left:10px;padding:1px 12px;border-radius:14px;background:#fff;font-weight:800;font-size:14px;z-index:4}
+#auto{position:fixed;top:168px;left:10px;padding:3px 12px;border-radius:14px;background:#fff;font-weight:800;font-size:14px;z-index:5;box-shadow:0 3px 0 #0003}#auto.on{background:#ffd23f}
+#alt{position:fixed;top:76px;left:10px;padding:2px 14px;border-radius:16px;background:#fff;font-weight:800;font-size:18px;z-index:4}
+#mbar{position:fixed;left:0;right:0;bottom:0;padding:8px 8px 12px;display:flex;gap:8px;overflow-x:auto;background:#1d2440dd;z-index:5;touch-action:pan-x;align-items:center}
+#mbar button{flex:0 0 auto;width:60px;height:60px;border-radius:18px;background:#fff;font-size:30px;box-shadow:0 4px 0 #0005}
+#mbar button.on{background:#ffd23f;outline:4px solid #fff}
+#mbar .sep{flex:0 0 2px;height:44px;background:#fff5}
+#mspd{flex:0 0 130px;height:44px;accent-color:#35c46a}
+#again{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:16px 34px;border-radius:30px;background:#35c46a;color:#fff;font-size:32px;font-weight:800;box-shadow:0 7px 0 #1c7a40,0 14px 24px #0006;z-index:6}
+.cf{position:fixed;top:-50px;font-size:34px;z-index:7;pointer-events:none;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+</style></head><body>
+<canvas id="c"></canvas>
+
+<div id="menu">
+  <h1>Boston Trains &amp; Planes</h1>
+  <p>Pick one to play!</p>
+  <div id="cards">
+    <button class="card t" data-m="train"><span class="e">🚆</span><div><b>Drive the Train</b><span>South Station to Stoughton</span></div></button>
+    <button class="card f" data-m="fly"><span class="e">✈️</span><div><b>Fly the Plane</b><span>Take off from Logan Airport</span></div></button>
+    <button class="card m" data-m="model"><span class="e">🚂</span><div><b>Model Trains</b><span>Draw your own track</span></div></button>
+  </div>
+</div>
+
+<div id="hud" class="hide">
+  <button class="rb" id="home" aria-label="Home">🏠</button>
+  <button class="rb" id="mute" aria-label="Sound">🔊</button>
+  <div id="stars">⭐ <span id="sc">0</span></div>
+  <button class="rb" id="camb" aria-label="Change view">🎥</button>
+  <div id="msg" style="opacity:0"></div>
+  <button id="again" class="hide">Play again!</button>
+
+  <div id="hTrain" class="hide">
+    <button class="big" id="horn" aria-label="Horn">📯</button>
+    <button class="big" id="bell" aria-label="Bell">🔔</button>
+    <div id="dash"><b id="spd">0</b><span>MPH</span></div>
+    <button id="sw">🔀 To Stoughton</button>
+    <div class="lever" id="levT"><i class="a">🐇</i><i class="b">🛑</i><div class="knob">🚆</div></div>
+  </div>
+  <div id="pick" class="hide">
+    <h2>Pick your aircraft</h2>
+    <div class="prow" id="pAC">
+      <button data-ac="prop"><span>🛩️</span><b>Twin-prop</b></button>
+      <button data-ac="jet"><span>✈️</span><b>Private jet</b></button>
+      <button data-ac="liner" class="on"><span>🛫</span><b>Airliner</b></button>
+      <button data-ac="heli"><span>🚁</span><b>Helicopter</b></button>
+    </div>
+    <h2>Where to?</h2>
+    <div class="prow" id="pDS">
+      <button data-ds="norwood" class="on"><b>Norwood</b><i>short hop</i></button>
+      <button data-ds="providence"><b>Providence</b><i>long flight</i></button>
+    </div>
+    <button id="pGo">Ready for take-off! 🛫</button>
+  </div>
+  <div id="hFly" class="hide">
+    <div id="alt">0 ft</div><div id="gear">GEAR ▼</div><div id="dist"></div><button id="auto">🤖 Autopilot</button>
+    <div id="arrow">⬆</div>
+    <div id="joy"><div class="knob"></div></div>
+    <div class="lever" id="levF"><i class="a">🚀</i><i class="b">🛑</i><div class="knob">✈️</div></div>
+  </div>
+  <div id="hModel" class="hide">
+    <div id="mbar">
+      <button data-tool="look" class="on" aria-label="Look around">✋</button>
+      <button data-tool="draw" aria-label="Draw track">✏️</button>
+      <button data-tool="erase" aria-label="Erase">🧽</button>
+      <button id="mzin" aria-label="Zoom in">➕</button>
+      <button id="mzout" aria-label="Zoom out">➖</button>
+      <div class="sep"></div>
+      <button data-tool="hill" aria-label="Hill">⛰️</button>
+      <button data-tool="mount" aria-label="Mountain">🏔️</button>
+      <button data-tool="volcano" aria-label="Volcano">🌋</button>
+      <button data-tool="pond" aria-label="Pond">💧</button>
+      <button data-tool="tree" aria-label="Tree">🌳</button>
+      <button data-tool="pine" aria-label="Pine tree">🌲</button>
+      <button data-tool="rocks" aria-label="Rocks">🪨</button>
+      <button data-tool="house" aria-label="House">🏠</button>
+      <button data-tool="station" aria-label="Station">🚉</button>
+      <button data-tool="barn" aria-label="Barn and silo">🌾</button>
+      <button data-tool="church" aria-label="Church">⛪</button>
+      <button data-tool="windmill" aria-label="Windmill">🌬️</button>
+      <button data-tool="tower" aria-label="Water tower">🛢️</button>
+      <button data-tool="lighthouse" aria-label="Lighthouse">🗼</button>
+      <button data-tool="castle" aria-label="Castle">🏰</button>
+      <button data-tool="ferris" aria-label="Ferris wheel">🎡</button>
+      <button data-tool="sky" aria-label="Tall building">🏢</button>
+      <button data-tool="signal" aria-label="Signal">🚦</button>
+      <button data-tool="car" aria-label="Car">🚗</button>
+      <button data-tool="people" aria-label="People">🧍</button>
+      <button data-tool="cow" aria-label="Cow">🐄</button>
+      <button data-tool="horse" aria-label="Horse">🐎</button>
+      <button data-tool="dino" aria-label="Dinosaur">🦖</button>
+      <button data-tool="balloon" aria-label="Hot air balloon">🎈</button>
+      <div class="sep"></div>
+      <button id="mlay" aria-label="Change layout">➰</button>
+      <button id="mtrain" aria-label="Change train">🚂</button>
+      <button id="mwh" aria-label="Whistle">📯</button>
+      <button id="msmoke" class="on" aria-label="Smoke">💨</button>
+      <button id="mwild" aria-label="Wild mode">🤪</button>
+      <button id="mclr" aria-label="Clear scenery">🧹</button>
+      <input id="mspd" type="range" min="0" max="1" step="0.01" value="0.45" aria-label="Speed">
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="core.js"></script>
+<script src="world.js"></script>
+<script src="aircraft.js"></script>
+<script src="places.js"></script>
+<script src="region.js"></script>
+<script src="train.js"></script>
+<script src="fly.js"></script>
+<script src="model.js"></script>
+<script src="main.js"></script>
+</body></html>
