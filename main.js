@@ -13,7 +13,12 @@ function setMode(m){mode=m;LBL.forEach(sp=>sp.visible=m==='fly'||(m==='train'&&!
   if(m==='model'){if(!model)buildModel();MT.ride=false;msg('Tap ✏️ and draw your own track!',6000);}
   if(m==='menu'){engine(0,200,0,40);try{speechSynthesis.cancel();}catch(e){}}
 }
-document.querySelectorAll('.card').forEach(b=>b.onclick=()=>{audioInit();setMode(b.dataset.m);});
+/* phones: go full screen and turn the game sideways, even when the phone or the app showing it will not rotate */
+function goWide(){if(!matchMedia('(pointer:coarse)').matches)return;const el=document.documentElement,lock=()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}setTimeout(resize,300);setTimeout(resize,900);};
+  try{if(!document.fullscreenElement&&el.requestFullscreen)el.requestFullscreen({navigationUI:'hide'}).then(lock).catch(lock);else if(!document.webkitFullscreenElement&&el.webkitRequestFullscreen){el.webkitRequestFullscreen();lock();}else lock();}catch(e){lock();}}
+document.querySelectorAll('.card').forEach(b=>b.onclick=()=>{audioInit();goWide();setMode(b.dataset.m);});
+$('turn').onclick=goWide;
+['orientationchange','fullscreenchange'].forEach(ev=>addEventListener(ev,()=>{resize();setTimeout(resize,250);setTimeout(resize,800);}));if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',()=>{setTimeout(resize,250);});if(window.visualViewport)visualViewport.addEventListener('resize',()=>resize());
 $('home').onclick=()=>setMode('menu');
 $('mute').onclick=()=>{muted=!muted;$('mute').textContent=muted?'🔇':'🔊';if(master)master.gain.value=muted?0:.8;if(muted)try{speechSynthesis.cancel();}catch(e){}};
 $('camb').onclick=()=>{if(mode==='train'){const nv={cab:'nose',nose:'seat',seat:'out',out:'cab'}[TR.view];setView(nv);msg({cab:"🚆 Driver's cab. Drag to look around",nose:'📷 Front camera',seat:'💺 Passenger seat. Drag to look around',out:'🎥 Outside view'}[nv],3000);}else if(mode==='fly'&&FL.phase!=='pick'){setFlyView(FL.view==='chase'?'cockpit':'chase');msg(FL.view==='cockpit'?'🧑‍✈️ Cockpit. Drag to look around':'🎥 Outside view',3000);}else if(mode==='model')MT.ride=!MT.ride;};

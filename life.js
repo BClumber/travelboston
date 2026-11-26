@@ -190,4 +190,6 @@ function updLife(dt){
   if(TRM){TRM.t+=dt;const T=TRM,span=T.d1-T.d0-50,leg=t=>{const c=t%96,seg=c<40?c/40:c<48?1:c<88?1-(c-48)/40:0;/* ease through the middle stop */const e=seg<.5?ss(0,.5,seg)*.5:.5+ss(.5,1,seg)*.5;return T.d0+46+span*e;};
     tramA.place((d,o)=>T.g(d,-2.4),leg(T.t),1,.72);tramB.place((d,o)=>T.g(d,2.4),leg(T.t+48),1,.72);}
   updPeople(dt);
+  /* place labels would fill the screen up close, so fade them out near the camera when flying */
+  if(mode==='fly'&&((LIFE.lf=(LIFE.lf||0)+1)&7)===0){const c=cam.position;LBL.forEach(sp=>{sp.visible=(sp.position.x-c.x)**2+(sp.position.y-c.y)**2+(sp.position.z-c.z)**2>sp.scale.x*sp.scale.x*4;});}
 }

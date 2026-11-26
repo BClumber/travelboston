@@ -4,7 +4,7 @@ const ACS={
   prop:{make:()=>makeProp('#0a8fa0'),vr:30,vmax:82,acc:8,gh:1.55,cb:17,cu:4.6,ck:[.42,2.3,.6]},
   jet:{make:()=>makeJet('#1b2a4a'),vr:40,vmax:135,acc:14,gh:1.7,cb:27,cu:6.5,ck:[.42,6.0,.68]},
   liner:{make:()=>makePlane('#1f5fbf'),vr:46,vmax:120,acc:11,gh:3.25,cb:62,cu:17,ck:[.7,15.0,1.12]},
-  heli:{make:()=>makeHeli('#c0392b'),vmax:62,acc:11,gh:1.62,cb:16,cu:5,ck:[.32,1.25,.74],heli:true}};
+  heli:{make:()=>makeHeli('#c0392b'),vmax:62,acc:11,gh:1.66,cb:19,cu:6,ck:[.32,1.25,.74],heli:true}};
 cam.far=16000;cam.updateProjectionMatrix();
 const craft={},QY=QYs,_fv=new V3();let PL=null,pickT=0;
 const FL={type:'liner',dest:'norwood',x:0,z:0,alt:0,v:0,vy:0,yaw:0,pitch:0,roll:0,onG:true,gear:1,gt:1,wi:0,wps:[],phase:'pick',view:'chase',lyaw:0,lpitch:0,rpm:0,done:false,flew:false,brake:false,call:{},fr:0,sx:0,sz:0,chop:0},F=FL;
