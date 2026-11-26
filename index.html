@@ -32,7 +32,9 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .card{flex:1 1 200px;max-width:260px;min-height:120px;border-radius:26px;padding:12px 10px;background:#fff;box-shadow:0 7px 0 #0003,0 12px 24px #0004;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .card:active{transform:translateY(5px);box-shadow:0 2px 0 #0003}
 .card div{display:flex;flex-direction:column;align-items:center}.card .e{font-size:50px;line-height:1.1}.card b{font-size:22px;line-height:1.1}.card span{font-size:13px;color:#5a6282;font-weight:600}
-.card.t{border-bottom:8px solid #7b2d8e}.card.f{border-bottom:8px solid #1f7ae0}.card.m{border-bottom:8px solid #e2572b}
+.card.t{border-bottom:8px solid #7b2d8e}.card.f{border-bottom:8px solid #1f7ae0}.card.m{border-bottom:8px solid #e2572b}.card.u{border-bottom:8px solid #17a36b}
+@media (orientation:landscape){.card{flex:1 1 130px;max-width:230px}}
+@media (orientation:landscape) and (max-height:430px){.card{min-height:104px}.card .e{font-size:40px}}
 @media (orientation:portrait){.card{flex-basis:100%;max-width:340px;flex-direction:row;min-height:84px;gap:14px;justify-content:flex-start;padding-left:20px}.card .e{font-size:44px}.card div{display:flex;flex-direction:column;align-items:flex-start}}
 .rb{position:fixed;width:58px;height:58px;border-radius:50%;background:#fff;font-size:28px;box-shadow:0 5px 0 #0003,0 8px 14px #0003;display:flex;align-items:center;justify-content:center;z-index:5}
 .rb:active{transform:translateY(4px);box-shadow:0 1px 0 #0003}
@@ -77,6 +79,14 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 @media (min-width:1200px) and (min-height:760px){#menu{zoom:1.35}}
 #turn{display:none;margin:12px auto 0;padding:10px 18px;border:0;border-radius:20px;background:#1d2440dd;color:#fff;font:inherit;font-weight:800;font-size:16px}
 @media (orientation:portrait) and (max-width:600px){#turn{display:block}}
+#thorn{left:14px;bottom:22px;background:#ffd23f}#tlight{left:110px;bottom:22px;background:#dfe3e8}#tlight.on{background:#fff27a;box-shadow:0 0 0 6px #fff9,0 0 26px 10px #ffe95a}#txray{left:206px;bottom:22px;background:#9fd8ff}#txray.on{background:#39b6ff;box-shadow:0 0 0 6px #fff9,0 6px 0 #0004}
+#tveh{position:fixed;top:76px;left:10px;display:flex;gap:8px;z-index:5}#tveh button{width:52px;height:52px;border-radius:16px;background:#ffffffcc;font-size:28px;box-shadow:0 4px 0 #0003}#tveh button.on{background:#fff;box-shadow:0 0 0 4px #17a36b,0 4px 0 #0003}
+#tbig{position:fixed;top:150px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;padding:10px 26px 10px 18px;border-radius:30px;background:#fffffff2;box-shadow:0 8px 24px #0005;z-index:4;pointer-events:none;transition:opacity .5s;white-space:nowrap;max-width:calc(100% - 20px)}
+#tbig span{font-size:clamp(46px,11vw,72px);line-height:1}#tbig b{font-size:clamp(24px,6vw,40px);font-weight:800;color:#1d2440;white-space:normal;line-height:1.05}
+#tbig .num{display:inline-flex;align-items:center;justify-content:center;width:1.25em;height:1.25em;border-radius:50%;background:#ffd23f;color:#1d2440;font-style:normal;font-weight:800}
+.pulse{animation:pulse .8s ease-in-out infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22);box-shadow:0 0 0 10px #ffffffaa,0 0 30px 14px #ffe95a}}
+@media (orientation:portrait){#thorn,#tlight,#txray{width:70px;height:70px;font-size:34px}#thorn{left:10px}#tlight{left:88px}#txray{left:166px}#tbig{top:260px}}
+@media (orientation:landscape) and (max-height:430px){#tbig{top:134px;padding:6px 20px 6px 14px}#tbig span{font-size:44px}#tbig b{font-size:26px}}
 </style></head><body>
 <canvas id="c"></canvas>
 
@@ -86,6 +96,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
   <div id="cards">
     <button class="card t" data-m="train"><span class="e">🚆</span><div><b>Drive the Train</b><span>South Station to Stoughton or Providence</span></div></button>
     <button class="card f" data-m="fly"><span class="e">✈️</span><div><b>Fly the Plane</b><span>Take off from Logan Airport</span></div></button>
+    <button class="card u" data-m="tunnel"><span class="e">🚇</span><div><b>Tunnel Drive</b><span>Under the harbor to the airport</span></div></button>
     <button class="card m" data-m="model"><span class="e">🚂</span><div><b>Model Trains</b><span>Draw your own track</span></div></button>
   </div>
   <button id="turn">📱 Tap to play sideways, full screen</button>
@@ -146,6 +157,14 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
     <div id="joy"><div class="knob"></div></div>
     <div class="lever" id="levF"><i class="a">🚀</i><i class="b">🛑</i><div class="knob">✈️</div></div>
   </div>
+  <div id="hTun" class="hide">
+    <button class="big" id="thorn" aria-label="Horn">📯</button>
+    <button class="big" id="tlight" aria-label="Lights">💡</button>
+    <button class="big" id="txray" aria-label="See what is above">👀</button>
+    <div id="tveh"><button aria-label="Car">🚗</button><button aria-label="School bus">🚌</button><button aria-label="Fire truck">🚒</button></div>
+    <div id="tbig" class="hide" style="opacity:0"></div>
+    <div class="lever" id="levU"><i class="a">🐇</i><i class="b">🛑</i><div class="knob">🚗</div></div>
+  </div>
   <div id="hModel" class="hide">
     <div id="mbar">
       <button data-tool="look" class="on" aria-label="Look around">✋</button>
@@ -200,6 +219,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 <script src="train.js"></script>
 <script src="fly.js"></script>
 <script src="model.js"></script>
+<script src="tunnel.js"></script>
 <script src="main.js"></script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
 </body></html>
