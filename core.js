@@ -42,7 +42,8 @@ const trackTex=cvs(256,128,(g,w,h)=>{g.fillStyle='#6f6a62';g.fillRect(0,0,w,h);f
   [.356,.644].forEach(u=>{g.fillStyle='#2a2623';g.fillRect(w*u-9,y0+4,18,th-8);const gr=g.createLinearGradient(w*u-14,0,w*u+14,0);gr.addColorStop(0,'rgba(90,50,25,0)');gr.addColorStop(.5,'rgba(90,50,25,.4)');gr.addColorStop(1,'rgba(90,50,25,0)');g.fillStyle=gr;g.fillRect(w*u-14,0,28,h);});});
 trackTex.wrapS=trackTex.wrapT=THREE.RepeatWrapping;
 const trackMat=new THREE.MeshStandardMaterial({map:trackTex,roughness:.95,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
-function flat(c,layer,o){return new THREE.MeshStandardMaterial(Object.assign({color:C(c),roughness:.9,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-layer,polygonOffsetUnits:-layer},o||{}));}
+const flatC={};function flat(c,layer,o){const k=c+'|'+layer+'|'+(o?JSON.stringify(o):'');return flatC[k]||(flatC[k]=flat0(c,layer,o));}
+function flat0(c,layer,o){return new THREE.MeshStandardMaterial(Object.assign({color:C(c),roughness:.9,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-layer,polygonOffsetUnits:-layer},o||{}));}
 function strip2(fA,fB,d0,d1,mat,step,vRep){
   const n=Math.max(1,Math.ceil((d1-d0)/(step||3))),pos=[],uv=[],idx=[];
   for(let i=0;i<=n;i++){const d=d0+(d1-d0)*i/n,a=fA(d),b=fB(d);pos.push(a.x,a.y,a.z,b.x,b.y,b.z);const v=vRep?d/vRep:i/n;uv.push(0,v,1,v);if(i<n){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}
@@ -53,7 +54,7 @@ function strip(posFn,d0,d1,o1,y1,o2,y2,mat,step,vRep){return strip2(d=>{const p=
 const ss=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 function inst(geo,mat,items,k,fn){const g=new THREE.BufferGeometry();for(const n in geo.attributes)g.setAttribute(n,geo.attributes[n]);g.setIndex(geo.index);g.groups=geo.groups;
   const m=new THREE.InstancedMesh(g,mat,items.length*k),c=new V3();items.forEach(it=>c.add(new V3(it[0],0,it[1])));c.multiplyScalar(1/Math.max(1,items.length));let r=0;items.forEach(it=>{r=Math.max(r,Math.hypot(it[0]-c.x,it[1]-c.z)+(it.y||0));});
-  g.boundingSphere=new THREE.Sphere(c,r+60);const dm=new THREE.Object3D(),col=new THREE.Color();items.forEach((it,i)=>fn(it,i,m,dm,col));return m;}
+  g.boundingSphere=new THREE.Sphere(c,r+60);m.frustumCulled=true;const dm=new THREE.Object3D(),col=new THREE.Color();items.forEach((it,i)=>fn(it,i,m,dm,col));return m;}
 const railTop=new THREE.MeshStandardMaterial({color:C('#b9bec6'),roughness:.22,metalness:1,side:THREE.DoubleSide}),railSide=new THREE.MeshStandardMaterial({color:C('#4d382b'),roughness:.8,metalness:.3,side:THREE.DoubleSide});
 function rails(posFn,d0,d1,off,parent,s,step,y0){[-.75,.75].forEach(r=>{const o=off+r*s,hw=.075*s,y1=y0+.28*s;parent.add(strip(posFn,d0,d1,o-hw,y1,o+hw,y1,railTop,step));parent.add(strip(posFn,d0,d1,o-hw,y0,o-hw,y1,railSide,step));parent.add(strip(posFn,d0,d1,o+hw,y0,o+hw,y1,railSide,step));});}
 function gable(w,h,l){const s=new THREE.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(0,h);s.closePath();const g=new THREE.ExtrudeGeometry(s,{depth:l,bevelEnabled:false});g.translate(0,0,-l/2);return g;}
@@ -83,6 +84,9 @@ function carMats(){if(CAR.ok)return;CAR.ok=1;
     [156,446,736].forEach(x=>{g.fillStyle='#b9bec6';g.fillRect(x,h*.1,62,h*.82);g.strokeStyle='#4d535d';g.lineWidth=3;g.strokeRect(x,h*.1,31,h*.82);g.strokeRect(x+31,h*.1,31,h*.82);glassFill(g,h*.16,h*.3);g.fillRect(x+6,h*.16,20,h*.3);g.fillRect(x+36,h*.16,20,h*.3);});grime(g,w,h);});
   const mf=cvs(128,128,(g,w,h)=>{steel(g,w,h);g.fillStyle='#e8731a';g.fillRect(0,h*.52,w,h*.12);glassFill(g,h*.1,h*.34);g.fillRect(w*.1,h*.1,w*.8,h*.34);grime(g,w,h);});
   CAR.metro=[T(ms),T(ms),roof,under,T(mf),T(mf)];CAR.all=CAR.coach.concat(CAR.loco,CAR.metro);
+  CAR.mc={};CAR.metroC=c=>{if(CAR.mc[c])return CAR.mc[c];const sd=cvs(1024,160,(g,w,h)=>{steel(g,w,h);g.fillStyle=c;g.fillRect(0,h*.5,w,h*.16);g.fillStyle='rgba(255,255,255,.85)';g.fillRect(0,h*.66,w,h*.025);for(let x=40;x<w-60;x+=58){if((x-40)/58%5===2)continue;glassFill(g,h*.16,h*.3);rr(g,x,h*.16,44,h*.3,5);g.fill();}
+      [156,446,736].forEach(x=>{g.fillStyle='#b9bec6';g.fillRect(x,h*.1,62,h*.82);g.strokeStyle='#4d535d';g.lineWidth=3;g.strokeRect(x,h*.1,31,h*.82);g.strokeRect(x+31,h*.1,31,h*.82);glassFill(g,h*.16,h*.3);g.fillRect(x+6,h*.16,20,h*.3);g.fillRect(x+36,h*.16,20,h*.3);});grime(g,w,h);}),
+      fr=cvs(128,128,(g,w,h)=>{steel(g,w,h);g.fillStyle=c;g.fillRect(0,h*.5,w,h*.16);glassFill(g,h*.1,h*.34);g.fillRect(w*.1,h*.1,w*.8,h*.34);g.fillStyle='#0b0e12';g.fillRect(w*.2,h*.02,w*.6,h*.07);grime(g,w,h);}),a=[T(sd),T(sd),roof,under,T(fr),T(fr)];a.forEach(m=>{if(CAR.all.indexOf(m)<0)CAR.all.push(m);});return CAR.mc[c]=a;};
   CAR.roofG=l=>{const g=new THREE.CylinderGeometry(1.6,1.6,l,14,1,false,0,Math.PI);g.rotateX(Math.PI/2);g.rotateZ(Math.PI/2);g.scale(1,.32,1);return g;};
 }
 function bogies(g,zs){const dk=M('#1d1f24',{roughness:.7,metalness:.4}),wm=M('#6a6f78',{roughness:.35,metalness:.9});(zs||[6.5,-6.5]).forEach(z=>{box(2.3,.6,4.4,dk,0,.7,z,g);box(2.6,.25,3.2,dk,0,.55,z,g);[1.4,-1.4].forEach(dz=>{const w=cyl(.5,.5,2.1,wm,0,.5,z+dz,g,14);w.rotation.z=Math.PI/2;});});}
@@ -98,7 +102,7 @@ function makeCar(type){
     box(3.2,3.3,20.6,CAR.coach,0,2.55,0,g);const r=new THREE.Mesh(CAR.roofG(20.6),roofM);r.position.y=4.2;g.add(r);[-6,6].forEach(z=>box(1.6,.3,2.4,dark,0,4.72,z,g));
     box(2.8,.5,19,dark,0,1.05,0,g);box(1.6,.7,4,dark,0,.75,0,g);[10.5,-10.5].forEach(z=>box(.4,.4,.8,dark,0,.9,z,g));bogies(g);
   }else if(type==='metro'){
-    box(3.1,3.2,20.6,CAR.metro,0,2.5,0,g);const r=new THREE.Mesh(CAR.roofG(20.6),roofM);r.position.y=4.1;r.scale.x=.97;g.add(r);box(2.8,.5,19,dark,0,1.05,0,g);[.8,-.8].forEach(x=>{sph(.2,GL('#fff4b8'),x,1.6,10.32,g);sph(.2,GL('#ff3b30'),x,1.6,-10.32,g);});bogies(g);
+    box(3.1,3.2,20.6,col?CAR.metroC(col):CAR.metro,0,2.5,0,g);const r=new THREE.Mesh(CAR.roofG(20.6),roofM);r.position.y=4.1;r.scale.x=.97;g.add(r);box(2.8,.5,19,dark,0,1.05,0,g);[.8,-.8].forEach(x=>{sph(.2,GL('#fff4b8'),x,1.6,10.32,g);sph(.2,GL('#ff3b30'),x,1.6,-10.32,g);});bogies(g);
   }else if(type==='steam'){
     const blk=M('#17191d',{roughness:.3,metalness:.6}),red=M('#b3261f',{roughness:.35,metalness:.2}),gold=M('#d6a531',{roughness:.25,metalness:1});
     const b=cyl(1.35,1.35,11.5,blk,0,2.5,2.2,g,20);b.rotation.x=Math.PI/2;const sb=cyl(1.45,1.45,1.2,M('#2c2f36',{roughness:.4,metalness:.7}),0,2.5,8.2,g,20);sb.rotation.x=Math.PI/2;
@@ -149,7 +153,7 @@ function makeCar(type){
       box(3.26,.8,9.5,glass,0,3.1,-5.2*s,g);box(3.28,.35,12.04,blue,0,2.2,-4.4*s,g);[.7,-.7].forEach(x=>sph(.25,GL('#fff4b8'),x,1.7,9.6*s,g));}
     box(2.9,.6,19.5,M('#7e8593',{metalness:.5,roughness:.5}),0,.95,0,g);bogies(g);
   }
-  return shadowize(g);
+  shadowize(g);batchStatic(g,null,1e9);return g;
 }
 class Consist{
   constructor(types,scale,parent){this.s=scale;this.cars=types.map(t=>{const c=makeCar(t);c.scale.setScalar(scale);parent.add(c);return c;});this.grp=parent;}
@@ -221,3 +225,22 @@ addEventListener('keyup',e=>{keys[kn(e)]=0;});addEventListener('blur',()=>{for(c
 const kst={x:0,y:0};function keyStick(dt){const tx=((keys.ArrowRight||keys.d)?1:0)-((keys.ArrowLeft||keys.a)?1:0),ty=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),f=keys.Shift?1:.62;
   kst.x+=clamp(tx*f-kst.x,-dt*(tx?2.2:5),dt*(tx?2.2:5));kst.y+=clamp(ty*f-kst.y,-dt*(ty?2.2:5),dt*(ty?2.2:5));return kst;}
 
+
+/* ---------- merge static scenery into a few big meshes so phones draw far fewer objects ---------- */
+function batchStatic(root,dyn,cell){
+  cell=cell||700;root.updateMatrixWorld(true);const B=new Map(),kill=[],v=new THREE.Vector3(),n3=new THREE.Matrix3(),base=THREE.Object3D.prototype.onBeforeRender;
+  root.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o.isSkinnedMesh||o.userData.keep)return;for(let p=o;p&&p!==root;p=p.parent){if(!p.visible||p.userData.dyn||(dyn&&dyn.has(p)))return;}
+    const g=o.geometry,pa=g.attributes.position;if(!pa||g.attributes.color||o.customDepthMaterial||o.renderOrder||o.onBeforeRender!==base||(g.morphAttributes&&g.morphAttributes.position))return;
+    const mats=Array.isArray(o.material)?o.material:[o.material];if(mats.some(m=>!m||m.transparent||m.depthWrite===false||m.isShaderMaterial))return;
+    if(!g.boundingSphere)g.computeBoundingSphere();v.copy(g.boundingSphere.center).applyMatrix4(o.matrixWorld);const ck=Math.floor(v.x/cell)+'_'+Math.floor(v.z/cell);
+    const idx=g.index,cnt=idx?idx.count:pa.count,groups=Array.isArray(o.material)&&g.groups.length?g.groups:[{start:0,count:cnt,materialIndex:0}],flip=o.matrixWorld.determinant()<0,na=g.attributes.normal,ua=g.attributes.uv;n3.getNormalMatrix(o.matrixWorld);
+    groups.forEach(gr=>{const m=mats[gr.materialIndex]||mats[0],key=m.uuid+'|'+ck+'|'+(o.castShadow?1:0)+(o.receiveShadow?1:0);let b=B.get(key);if(!b)B.set(key,b={m,cast:o.castShadow,recv:o.receiveShadow,P:[],N:[],U:[],I:[],n:0});
+      const map=new Map(),end=Math.min(cnt,gr.start+gr.count);for(let i=gr.start;i<end;i+=3){const t=[0,1,2].map(k=>{const vi=idx?idx.getX(i+k):i+k;let ni=map.get(vi);if(ni===undefined){ni=b.n++;map.set(vi,ni);v.fromBufferAttribute(pa,vi).applyMatrix4(o.matrixWorld);b.P.push(v.x,v.y,v.z);
+            if(na){v.fromBufferAttribute(na,vi).applyMatrix3(n3).normalize();b.N.push(v.x,v.y,v.z);}else b.N.push(0,1,0);if(ua)b.U.push(ua.getX(vi),ua.getY(vi));else b.U.push(0,0);}return ni;});
+        if(flip)b.I.push(t[0],t[2],t[1]);else b.I.push(t[0],t[1],t[2]);}});
+    kill.push(o);});
+  kill.forEach(o=>{o.parent.remove(o);o.geometry.dispose();});
+  B.forEach(b=>{if(!b.I.length)return;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(b.P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(b.N,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(b.U,2));
+    g.setIndex(b.n>65535?new THREE.Uint32BufferAttribute(b.I,1):new THREE.Uint16BufferAttribute(b.I,1));g.computeBoundingSphere();g.computeBoundingBox();const m=new THREE.Mesh(g,b.m);m.castShadow=b.cast;m.receiveShadow=b.recv;m.matrixAutoUpdate=false;m.userData.batched=true;root.add(m);});
+  return {merged:kill.length,into:B.size};
+}

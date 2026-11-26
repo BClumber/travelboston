@@ -107,6 +107,7 @@ const carCols=['#b3261f','#1f4f9f','#e6e6e6','#2b2b2b','#8a8f98','#d9b21a','#2e6
 function car(parent,x,y,z,ry){const g=new THREE.Group(),c=M(carCols[(Math.random()*carCols.length)|0],{roughness:.3,metalness:.5});box(1.9,.9,4.4,c,0,.75,0,g);box(1.7,.8,2.3,M('#18222e',{roughness:.1,metalness:.8}),0,1.55,-.2,g);[[.95,1.4],[-.95,1.4],[.95,-1.4],[-.95,-1.4]].forEach(a=>{const w=cyl(.36,.36,.25,M('#111'),a[0],.36,a[1],g,10);w.rotation.z=Math.PI/2;});g.position.set(x,y,z);g.rotation.y=ry||0;parent.add(g);return g;}
 
 function buildCity(){
+  {const R=[[-4500,-760],[-2500,-700],[-1500,-650],[-700,-800],[-250,-1000],[230,-1060]];for(let i=0;i<R.length-1;i++)EXS.push([R[i][0],R[i][1],R[i+1][0],R[i+1][1],112]);}
   const rv=new THREE.CatmullRomCurve3([[-4500,-760],[-2500,-700],[-1500,-650],[-700,-800],[-250,-1000],[230,-1060]].map(p=>new V3(p[0],0,p[1])));const rl=rv.getLength();
   const rvp=(d,o)=>{const u=clamp(d/rl,0,1),p=rv.getPointAt(u),t=rv.getTangentAt(u);p.x+=t.z*o;p.z-=t.x*o;return p;};world.add(strip(rvp,0,rl,-95,.1,95,.1,water2(),40));
   const stTex=cvs(256,256,(g,w,h)=>{g.fillStyle='#8f9296';g.fillRect(0,0,w,h);for(let i=0;i<1500;i++){g.fillStyle='rgba(0,0,0,'+rnd(0,.07)+')';g.fillRect(rnd(0,w),rnd(0,h),3,3);}
@@ -384,10 +385,6 @@ function buildNature(){
       world.add(inst(hG,hM,L,1,(s,i,m,dm,col)=>{s.r=rnd(0,6);dm.scale.set(1,s[3],1);dm.position.set(s[0],3*s[3],s[1]);dm.rotation.set(0,s.r,0);dm.updateMatrix();m.setMatrixAt(i,dm.matrix);m.setColorAt(i,col.set(hc[(Math.random()*(s[3]>1.6?hc.length:9))|0]).convertSRGBToLinear());}));
       world.add(inst(rG,roofI,L,1,(s,i,m,dm,col)=>{dm.scale.set(1,s[3]>2?.12:1,1);dm.position.set(s[0],6*s[3],s[1]);dm.rotation.set(0,s.r,0);dm.updateMatrix();m.setMatrixAt(i,dm.matrix);m.setColorAt(i,col.set(['#3a3d44','#4a3a30','#2f3238','#5a3a32'][i%4]).convertSRGBToLinear());}));
     }else addTrees(L);});
-  /* people (instanced) */
-  const pc=['#b5452b','#27578f','#2f7a4a','#c79a1c','#6d3a86','#b65a85','#3b4a6b','#555','#8a8f98'],sk=['#e8bf9a','#c99772','#8d5e3f','#f0cfae'],wm=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.8});
-  const mk=(geo,yo,cols)=>{const m=new THREE.InstancedMesh(geo,wm(),PEOPLE.length),dm=new THREE.Object3D(),col=new THREE.Color();PEOPLE.forEach((p,i)=>{dm.position.set(p[0],p[1]+yo,p[2]);dm.updateMatrix();m.setMatrixAt(i,dm.matrix);m.setColorAt(i,col.set(cols[(i*7+3)%cols.length]).convertSRGBToLinear());});m.frustumCulled=false;world.add(m);};
-  mk(new THREE.CylinderGeometry(.3,.26,.9,8),.45,['#2b3040','#3a3a3a','#4a5a78']);mk(new THREE.CylinderGeometry(.3,.38,1.3,10),1.4,pc);mk(new THREE.SphereGeometry(.3,10,8),2.3,sk);
   /* clouds */
   const cT=cvs(256,128,g=>{for(let i=0;i<22;i++){const x=rnd(50,206),y=rnd(52,84),r=rnd(22,46),gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,255,255,.75)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,256,128);}});
   for(let i=0;i<70;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:cT,transparent:true,depthWrite:false,fog:false,opacity:rnd(.6,.95)}));const k=rnd(900,2200);s.scale.set(k,k*.5,1);s.position.set(rnd(-9000,9000),rnd(1100,2000),rnd(-8000,17000));world.add(s);}

@@ -56,16 +56,24 @@ function buildPlaces(){
    ['Blue Hills',flatP(R128+330,-1180).x,300,flatP(R128+330,-1180).z,1.1],['Route 128 Station',rpos(R128,-52).x,40,rpos(R128,-52).z,.8],['Canton Viaduct',VC.x,26,VC.z,.8],['Stoughton Station',rpos(ST,-17).x,44,rpos(ST,-17).z,.8],['The stadium',STAD[0],78,STAD[1],.9],['Providence',-3330,190,12590,1.2],['Rhode Island State House',-3440,84,12300,.9]].forEach(a=>label(a[0],a[1],a[2],a[3],a[4]));
 }
 /* ---------- moving traffic on the mapped roads ---------- */
-const TRAF={runs:[],cars:[],b:null,c:null};
+const TRAF={runs:[],cars:[],bus:[],b:null,c:null};
 function buildTraffic(){
   if(!TRAF.runs.length)return;const tot=TRAF.runs.reduce((a,r)=>a+r.len,0),N=Math.min(900,Math.round(tot/55)),m4=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.35,metalness:.5});
   TRAF.b=new THREE.InstancedMesh(new THREE.BoxGeometry(1.9,.95,4.4),m4(),N);TRAF.c=new THREE.InstancedMesh(new THREE.BoxGeometry(1.7,.8,2.3),M('#18222e',{roughness:.1,metalness:.8}),N);const col=new THREE.Color();
   for(let i=0;i<N;i++){let k=Math.random()*tot,r=TRAF.runs[0];for(const q of TRAF.runs){if(k<q.len){r=q;break;}k-=q.len;}const dir=i%2?1:-1,hw=r.w>20;TRAF.cars.push({r,d:r.a+Math.random()*r.len,dir,v:(hw?rnd(34,48):rnd(16,26)),o:dir*(hw?rnd(3.4,9.5):r.w/4)});TRAF.b.setColorAt(i,col.set(carCols[i%carCols.length]).convertSRGBToLinear());}
   [TRAF.b,TRAF.c].forEach(m=>{m.frustumCulled=false;m.castShadow=false;m.receiveShadow=false;world.add(m);});
+  /* buses: city buses on local and downtown streets, school buses on the town roads */
+  const loc=TRAF.runs.filter(r=>r.w<=26&&r.len>200),lt=loc.reduce((a,r)=>a+r.len,0);if(!loc.length)return;
+  [['city',Math.min(70,Math.round(lt/700))],['school',Math.min(26,Math.round(lt/2200))]].forEach(q=>{const mesh=new THREE.InstancedMesh(busGeo(),busMat(q[0]),q[1]);mesh.frustumCulled=false;world.add(mesh);
+    for(let i=0;i<q[1];i++){let r;if(q[0]==='city'&&i%2===0){const cr=loc.filter(x=>x.city);r=cr[i/2%cr.length|0];}else{let k=Math.random()*lt;r=loc[0];for(const x of loc){if(k<x.len){r=x;break;}k-=x.len;}}
+      const dir=i%4<2?1:-1;TRAF.bus.push({mesh,i,r,d:r.a+Math.random()*r.len,dir,v:rnd(11,17),v0:0,o:dir*(r.w>20?6.6:r.w/4),next:rnd(4,30),wait:0});}});
 }
 const _tm=new THREE.Matrix4();
 function updTraffic(dt){if(!TRAF.b)return;const cx=cam.position.x,cz=cam.position.z;TRAF.cars.forEach((c,i)=>{c.d+=c.dir*c.v*dt;const r=c.r;if(c.d>r.a+r.len)c.d=r.a;else if(c.d<r.a)c.d=r.a+r.len;const p=r.f(c.d,c.o);if((p.x-cx)**2+(p.z-cz)**2>36e6){_tm.makeScale(0,0,0);TRAF.b.setMatrixAt(i,_tm);TRAF.c.setMatrixAt(i,_tm);return;}
-    const q=r.f(c.d+c.dir*3,c.o),ry=Math.atan2(q.x-p.x,q.z-p.z);_tm.makeRotationY(ry);_tm.setPosition(p.x,.75,p.z);TRAF.b.setMatrixAt(i,_tm);_tm.setPosition(p.x-Math.sin(ry)*.25,1.6,p.z-Math.cos(ry)*.25);TRAF.c.setMatrixAt(i,_tm);});TRAF.b.instanceMatrix.needsUpdate=true;TRAF.c.instanceMatrix.needsUpdate=true;}
+    const q=r.f(c.d+c.dir*3,c.o),ry=Math.atan2(q.x-p.x,q.z-p.z);_tm.makeRotationY(ry);_tm.setPosition(p.x,.75,p.z);TRAF.b.setMatrixAt(i,_tm);_tm.setPosition(p.x-Math.sin(ry)*.25,1.6,p.z-Math.cos(ry)*.25);TRAF.c.setMatrixAt(i,_tm);});TRAF.b.instanceMatrix.needsUpdate=true;TRAF.c.instanceMatrix.needsUpdate=true;
+  const ms=new Set();TRAF.bus.forEach(c=>{const r=c.r;if(c.wait>0){c.wait-=dt;c.v0=Math.max(0,c.v0-9*dt);}else{c.next-=dt;if(c.next<=0){c.wait=rnd(4,7);c.next=rnd(22,45);}c.v0=Math.min(c.v,c.v0+3.5*dt);}
+    c.d+=c.dir*c.v0*dt;if(c.d>r.a+r.len)c.d=r.a;else if(c.d<r.a)c.d=r.a+r.len;const p=r.f(c.d,c.o);if((p.x-cx)**2+(p.z-cz)**2>36e6){c.mesh.setMatrixAt(c.i,_tm.makeScale(0,0,0));ms.add(c.mesh);return;}
+    const q=r.f(c.d+c.dir*4,c.o);_tm.makeRotationY(Math.atan2(q.x-p.x,q.z-p.z));_tm.setPosition(p.x,1.72,p.z);c.mesh.setMatrixAt(c.i,_tm);ms.add(c.mesh);});ms.forEach(m=>m.instanceMatrix.needsUpdate=true);}
 /* ---------- road tunnels shown as ghosted routes with portals ---------- */
 const TUN_I93=[[30,290],[100,150],[120,-150],[118,-420],[112,-600],[40,-760],[-120,-900],[-205,-955]];
 function plDist(x,z,P){let b=1e9;for(let i=0;i<P.length-1;i++){const ax=P[i+1][0]-P[i][0],az=P[i+1][1]-P[i][1],t=clamp(((x-P[i][0])*ax+(z-P[i][1])*az)/(ax*ax+az*az),0,1);b=Math.min(b,Math.hypot(x-P[i][0]-ax*t,z-P[i][1]-az*t));}return b;}

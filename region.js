@@ -145,7 +145,7 @@ function buildRegion(){
     const lawn=new THREE.Mesh(new THREE.CircleGeometry(90,28),flat('#4f8a3a',1.4));lawn.rotation.x=-Math.PI/2;lawn.position.set(-3440,.1,12320);world.add(lawn); }
   /* towns + woods all the way down */
   const towns=[[-1950,5350,230],[-2330,7000,260],[-2180,8350,260],[-2700,10250,330],[-2950,11750,360],[-3300,12950,330],[-3900,13800,260],[-600,6500,220],[-4200,9400,220],[900,8200,240],[-700,10400,240],[-1500,12600,260],[600,13200,220],[-4700,12200,240]];
-  const H=[],T=[],okp=(x,z)=>pip(x,z,MAIN)&&EXC.every(c=>(x-c[0])**2+(z-c[1])**2>c[2]*c[2])&&Math.hypot(x+4050,z-14500)>620&&!(x>-3660&&x<-3000&&z>12180&&z<12790)&&nearMain(x,z)[0]>34&&nearRoute(x,z)[0]>34;
+  const H=[],T=[],okp=(x,z)=>pip(x,z,MAIN)&&EXC.every(c=>(x-c[0])**2+(z-c[1])**2>c[2]*c[2])&&Math.hypot(x+4050,z-14500)>620&&!(x>-3660&&x<-3000&&z>12180&&z<12790)&&nearMain(x,z)[0]>34&&nearRoute(x,z)[0]>34&&EXS.every(s=>{const ax=s[2]-s[0],az=s[3]-s[1],t=clamp(((x-s[0])*ax+(z-s[1])*az)/(ax*ax+az*az),0,1);return Math.hypot(x-s[0]-ax*t,z-s[1]-az*t)>s[4];});
   towns.forEach(t=>{{let g=0;while(nearMain(t[0],t[1])[0]<130&&g++<20)t[0]+=20;}for(let i=0;i<t[2]*.6;i++){const a=rnd(0,6.283),r=t[2]*Math.sqrt(Math.random()),x=t[0]+Math.cos(a)*r,z=t[1]+Math.sin(a)*r;if(okp(x,z))(i%3?H:T).push([x,z]);}
     if(okp(t[0],t[1])){const wh=M('#f1efe8',{roughness:.7});box(9,8,16,wh,t[0],4,t[1],world);box(4,16,4,wh,t[0],8,t[1]-9,world);const s=cyl(0,2.4,9,M('#3a3d44'),t[0],20.5,t[1]-9,world,4);s.rotation.y=Math.PI/4;sbox(34,12,18,t[0]+40,6,t[1]+30,.4,bt[2],14);cyl(4,4,5,M('#9fb7c8',{metalness:.5,roughness:.5}),t[0]-50,24,t[1]+20,world,12);cyl(.8,.8,22,M('#888'),t[0]-50,11,t[1]+20,world,6);}});
   for(let i=0;i<9000;i++){const x=rnd(-5600,2600),z=rnd(5900,16800);if(okp(x,z)&&fbm(((x+6000)/9000)%1,((z)/9000)%1,8)>.42)T.push([x,z]);}
@@ -159,4 +159,4 @@ function buildRegion(){
 }
 buildCity();buildTracks();buildCuts();buildTunnel();buildHall();buildStations();buildLandmarks();buildMain();
 catenary(rpos,HE+14,T1-24);catenary(rpos,T2+26,DJ);catenary(spos,10,SL);
-buildHills();buildAirports();buildPlaces();buildRoads();buildTunnels();buildRegion();buildNature();shadowize(world);buildTraffic();
+buildHills();buildAirports();buildPlaces();buildRoads();buildTunnels();buildLifeLines();buildLifeShops();buildRegion();buildNature();buildLifeFinish();shadowize(world);{const dyn=new Set();XING.forEach(c=>c.arms.forEach(a=>dyn.add(a[0])));[redTrain,tramA,tramB].forEach(c=>c&&c.cars.forEach(k=>dyn.add(k)));window.__batch=batchStatic(world,dyn);}buildTraffic();

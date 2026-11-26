@@ -19,6 +19,7 @@ Play it at https://bclumber.github.io/travelboston/ . On a phone or tablet use "
 | `world.js` | Rail line, stations, tunnels, city and scenery |
 | `region.js` | Airports, roads and highways, the wider region |
 | `places.js` | Named landmarks, the zoo, road tunnels, moving cars |
+| `life.js` | People, shops, buses, subway and trolley lines, street details |
 | `aircraft.js` | Planes and the helicopter |
 | `train.js` / `fly.js` / `model.js` | The three play modes |
 | `main.js` | Mode switching and the main loop |
