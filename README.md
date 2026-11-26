@@ -8,7 +8,7 @@ A train, flight and model-train simulator of the Boston area, made for a young t
 
 ## Running it
 
-Open `index.html` from any web server (for example GitHub Pages). It needs an internet connection the first time to load three.js and the font.
+Play it at https://bclumber.github.io/travelboston/ . On a phone or tablet use "Add to Home Screen" (or "Install app") to get a full-screen app icon. On a computer, press H in the game for the keyboard keys.
 
 ## Files
 

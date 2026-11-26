@@ -2,8 +2,8 @@
 /* =====================================================================
    NAMED PLACES (hand-placed on this compressed map) + labels + traffic
    ===================================================================== */
-function label(name,x,y,z,s){const t=cvs(512,96,(g,w,h)=>{g.clearRect(0,0,w,h);g.font='800 44px Arial';const tw=Math.min(w-16,g.measureText(name).width+46);g.fillStyle='rgba(16,24,48,.88)';rr(g,(w-tw)/2,10,tw,76,38);g.fill();g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(name,w/2,50,w-44);});
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false})),k=s||1;sp.scale.set(170*k,32*k,1);sp.position.set(x,y,z);world.add(sp);return sp;}
+const LBL=[];function label(name,x,y,z,s){const t=cvs(512,96,(g,w,h)=>{g.clearRect(0,0,w,h);g.font='800 44px Arial';const tw=Math.min(w-16,g.measureText(name).width+46);g.fillStyle='rgba(16,24,48,.88)';rr(g,(w-tw)/2,10,tw,76,38);g.fill();g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(name,w/2,50,w-44);});
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false})),k=s||1;sp.scale.set(170*k,32*k,1);sp.position.set(x,y,z);world.add(sp);sp.userData.rail=Math.min(nearRoute(x,z)[0],nearMain(x,z)[0])<260;LBL.push(sp);return sp;}
 function green(x,z,rx,rz,c){const m=new THREE.Mesh(new THREE.CircleGeometry(1,32),flat(c||'#4f7a3a',1.6));m.rotation.x=-Math.PI/2;m.scale.set(rx,rz,1);m.position.set(x,.12,z);world.add(m);return m;}
 function dog(x,z,c,ry){const g=new THREE.Group(),m=M(c,{roughness:.9});box(.5,.5,1.2,m,0,.75,0,g);box(.42,.42,.5,m,0,1.05,.75,g);box(.16,.3,.1,m,0,.95,-.68,g).rotation.x=-.6;[[.18,.4],[-.18,.4],[.18,-.4],[-.18,-.4]].forEach(a=>box(.14,.55,.14,m,a[0],.27,a[1],g));g.position.set(x,0,z);g.rotation.y=ry||0;g.scale.setScalar(1.5);world.add(g);}
 function buildPlaces(){

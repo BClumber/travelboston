@@ -81,8 +81,8 @@ function updFly(dt){
   const S=ACS[F.type],A=APT[F.dest],heli=!!S.heli,L=A.land,now=performance.now();
   BOOM.forEach(p=>{const u=p.userData;if(u.life>0){u.life-=dt;p.position.addScaledVector(u.v,dt);u.v.y-=dt*4;u.v.multiplyScalar(1-dt*.8);p.scale.multiplyScalar(1+dt*1.1);const k=clamp(u.life/1.5,0,1);p.material.color.setRGB(.15+.85*k,.13+.45*k*k,.12);p.material.opacity=clamp(u.life,0,1)*.85;}else p.material.opacity=0;});
   if(F.crashT>0){F.crashT-=dt;const a=now*.0004;cam.position.lerp(_fv.set(F.x+Math.sin(a)*70,F.alt+28,F.z+Math.cos(a)*70),Math.min(1,dt*2));cam.lookAt(F.x,F.alt+4,F.z);engine(0,200,0,40);sunFollow(F.x,0,F.z,240);if(F.crashT<=0)respawn();return;}
-  if(keys.w)levF.set(levF.v+dt*.7);if(keys.s)levF.set(levF.v-dt*.9);
-  let jx=joy.x,jy=joy.y;if(joy.id===null){jx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0);jy=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0);}
+  if(keys.w||keys.PageUp||keys['=']||keys['+'])levF.set(levF.v+dt*.7);if(keys.s||keys.PageDown||keys['-'])levF.set(levF.v-dt*.9);
+  let jx=joy.x,jy=joy.y;if(joy.id===null){const k=keyStick(dt);jx=k.x;jy=k.y;}
   const landing=F.wi>=F.wps.length,W=landing?null:F.wps[F.wi];let T;
   if(!landing)T=W;else if(heli)T={x:A.pad[0],y:0,z:A.pad[1]};else{const s=(F.x-L.tx)*L.ux+(F.z-L.tz)*L.uz;T={x:L.tx+L.ux*(s+240),y:0,z:L.tz+L.uz*(s+240),s};}
   const dist=Math.hypot(T.x-F.x,T.z-F.z);let dh=Math.atan2(T.x-F.x,T.z-F.z)-F.yaw;dh=Math.atan2(Math.sin(dh),Math.cos(dh));
@@ -153,3 +153,12 @@ function updFly(dt){
 (function(){let id=null,lx=0,ly=0;canvas.addEventListener('pointerdown',e=>{if(mode!=='fly'||F.view!=='cockpit')return;id=e.pointerId;lx=e.clientX;ly=e.clientY;});
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==id||mode!=='fly')return;F.lyaw=clamp(F.lyaw+(e.clientX-lx)*.006,-2.2,2.2);F.lpitch=clamp(F.lpitch+(e.clientY-ly)*.004,-.6,.5);lx=e.clientX;ly=e.clientY;});
   const up=e=>{if(e.pointerId===id)id=null;};canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);})();
+
+/* keyboard shortcuts for a computer */
+function flyKey(fn){return()=>{if(mode==='fly'&&F.phase==='fly')fn();};}
+keyTap.l=keyTap.p=flyKey(()=>$('auto').click());
+keyTap[' ']=()=>{if(mode==='fly'&&F.phase==='fly'){levF.set(0);msg('🛑 Power off',1500);}else if(mode==='train')$('horn').click();};
+for(let i=0;i<=9;i++)keyTap[''+i]=flyKey(()=>levF.set(i===0?1:i/10));
+keyTap.c=keyTap.v=()=>{if(mode==='fly'&&F.phase!=='fly')return;if(mode==='fly'||mode==='train')$('camb').click();};
+keyTap.Enter=()=>{if(mode==='fly'&&F.phase==='pick')$('pGo').click();else if(!$('again').classList.contains('hide'))$('again').click();};
+keyTap.h=keyTap['?']=()=>{$('keys').classList.toggle('open');};

@@ -117,6 +117,31 @@ function makeCar(type){
     const t=cyl(1.6,1.6,17,M(col||'#dfe1e6',{roughness:.3,metalness:.5}),0,2.8,0,g,20);t.rotation.x=Math.PI/2;cyl(.7,.7,.7,dark,0,4.6,0,g);box(2.8,.5,18,dark,0,1.0,0,g);bogies(g);
   }else if(type==='caboose'){
     const rd=M('#b8301f',{roughness:.5});box(3.1,3.0,13,rd,0,2.6,0,g);box(2.2,1.3,3.5,rd,0,4.6,0,g);box(2.24,.7,3.0,glass,0,4.7,0,g);box(3.3,.25,14,M('#4a1813'),0,4.15,0,g);box(3.14,.9,1.4,glass,0,3,3,g);box(3.14,.9,1.4,glass,0,3,-3,g);box(2.8,.5,15,dark,0,1.0,0,g);bogies(g,[4,-4]);
+  }else if(type==='hsF'||type==='hsR'||type==='hsC'||type==='eloco'||type==='amc'){
+    /* intercity electric trains: a high-speed tilting set and a regional with an electric engine */
+    if(!CAR.ic){const T=(t)=>new THREE.MeshStandardMaterial({map:t,roughness:.3,metalness:.6}),flip=t=>{const c=t.clone();c.wrapS=THREE.RepeatWrapping;c.repeat.x=-1;c.offset.x=1;c.needsUpdate=true;return c;},six=(t,rf)=>[T(t),T(flip(t)),rf,M('#1f2126'),T(t),T(t)];
+      const rfS=M('#b9bfc8',{roughness:.45,metalness:.6}),rfD=M('#565c66',{roughness:.6,metalness:.4});
+      const hs=cvs(1024,160,(g,w,h)=>{steel(g,w,h);g.fillStyle='rgba(255,255,255,.28)';g.fillRect(0,0,w,h);g.fillStyle='#16324f';g.fillRect(0,h*.2,w,h*.3);g.fillStyle='#0f7fa8';g.fillRect(0,h*.52,w,h*.05);g.fillStyle='#b8242a';g.fillRect(0,h*.86,w,h*.04);
+        for(let x=70;x<w-90;x+=92){glassFill(g,h*.23,h*.22);rr(g,x,h*.23,72,h*.22,10);g.fill();}[16,w-56].forEach(x=>{g.strokeStyle='#7d838d';g.lineWidth=3;g.strokeRect(x,h*.12,40,h*.78);});grime(g,w,h);});
+      const hp=cvs(1024,160,(g,w,h)=>{steel(g,w,h);g.fillStyle='rgba(255,255,255,.28)';g.fillRect(0,0,w,h);g.fillStyle='#16324f';g.fillRect(0,h*.2,w,h*.3);g.fillStyle='#0f7fa8';g.fillRect(0,h*.52,w,h*.05);g.fillStyle='#b8242a';g.fillRect(0,h*.86,w,h*.04);
+        for(let x=120;x<w-120;x+=150){g.fillStyle='#2a3038';for(let k=0;k<7;k++)g.fillRect(x,h*.6+k*5,96,2.5);}grime(g,w,h);});
+      const am=cvs(1024,160,(g,w,h)=>{steel(g,w,h);for(let y=0;y<h;y+=7){g.fillStyle=y%14?'rgba(255,255,255,.16)':'rgba(0,0,0,.14)';g.fillRect(0,y,w,3);}g.fillStyle='#1b3f77';g.fillRect(0,h*.22,w,h*.27);g.fillStyle='#b8242a';g.fillRect(0,h*.5,w,h*.045);g.fillStyle='#f4f5f7';g.fillRect(0,h*.55,w,h*.03);
+        for(let x=110;x<w-130;x+=66){glassFill(g,h*.26,h*.18);rr(g,x,h*.26,46,h*.18,8);g.fill();}[20,w-68].forEach(x=>{g.strokeStyle='#5d636d';g.lineWidth=3;g.strokeRect(x,h*.1,46,h*.82);glassFill(g,h*.2,h*.2);g.fillRect(x+10,h*.2,26,h*.2);});grime(g,w,h);});
+      const el=cvs(1024,160,(g,w,h)=>{g.fillStyle='#d9dde3';g.fillRect(0,0,w,h);g.fillStyle='#1b3f77';g.fillRect(0,h*.08,w,h*.5);g.fillStyle='#b8242a';g.fillRect(0,h*.6,w,h*.06);g.fillStyle='#2a3038';[[200,150],[440,150],[680,150]].forEach(q=>{for(let k=0;k<8;k++)g.fillRect(q[0],h*.16+k*6,q[1],3);});
+        [30,w-110].forEach(x=>{glassFill(g,h*.14,h*.26);rr(g,x,h*.14,80,h*.26,8);g.fill();});grime(g,w,h);});
+      const end=cvs(128,128,(g,w,h)=>{steel(g,w,h);g.strokeStyle='#555b65';g.lineWidth=3;g.strokeRect(w*.3,h*.12,w*.4,h*.8);grime(g,w,h);});
+      CAR.ic={hs:six(hs,rfS),hp:six(hp,rfS),am:six(am,rfS),el:six(el,rfD)};[CAR.ic.hs,CAR.ic.hp,CAR.ic.am,CAR.ic.el].forEach(a=>{a[4]=T(end);a[5]=a[4];a.forEach(m=>{if(CAR.all&&CAR.all.indexOf(m)<0)CAR.all.push(m);});});}
+    const gm=M('#3a3f48',{roughness:.5,metalness:.8}),panto=(z,up)=>{box(1.5,.18,2.6,gm,0,4.45,z,g);if(!up){box(.1,.1,2.4,gm,0,4.62,z,g);return;}const a=box(.1,.1,1.9,gm,0,5.0,z-.35,g);a.rotation.x=-.75;const b=box(.1,.1,1.9,gm,0,5.75,z-.35,g);b.rotation.x=.75;box(2.1,.09,.28,gm,0,6.38,z+.3,g);[-.7,.7].forEach(x=>box(.3,.3,.3,M('#8a4a2a'),x,4.65,z+.9,g));};
+    const skirt=M('#7e8593',{metalness:.5,roughness:.5}),wh=M('#e9edf2',{roughness:.22,metalness:.45}),navy=M('#16324f',{roughness:.3,metalness:.4});
+    if(type==='hsC'){box(3.2,3.1,20.8,CAR.ic.hs,0,2.55,0,g);const r=new THREE.Mesh(CAR.roofG(20.8),CAR.ic.hs[2]);r.position.y=4.1;g.add(r);box(2.95,.6,19.6,skirt,0,.95,0,g);[10.5,-10.5].forEach(z=>box(2.6,2.6,.5,dark,0,2.5,z,g));bogies(g);}
+    else if(type==='hsF'||type==='hsR'){const s=type==='hsR'?-1:1;box(3.2,3.1,13,CAR.ic.hp,0,2.55,-3.9*s,g);const r=new THREE.Mesh(CAR.roofG(13),CAR.ic.hp[2]);r.position.set(0,4.1,-3.9*s);g.add(r);
+      const n=sph(1,wh,0,2.3,2.2*s,g);n.scale.set(1.6,1.32,8.3);const nb=sph(1,navy,0,2.75,2.0*s,g);nb.scale.set(1.615,.5,7.6);const cw=sph(1,glass,0,3.2,4.3*s,g);cw.scale.set(1.12,.56,2.5);
+      box(2.5,.8,2.4,skirt,0,.9,6.6*s,g);[.75,-.75].forEach(x=>{sph(.2,GL(s>0?'#fff4b8':'#ff3b30'),x,1.75,9.55*s,g);});sph(.17,GL(s>0?'#fff4b8':'#7a1512'),0,3.85,6.5*s,g);
+      box(2.95,.6,18,skirt,0,.95,-1.2*s,g);panto(-6*s,s<0);[-1,-3.6].forEach(z=>box(1.8,.35,1.6,gm,0,4.4,z*s,g));bogies(g);}
+    else if(type==='amc'){box(3.2,3.25,20.6,CAR.ic.am,0,2.55,0,g);const r=new THREE.Mesh(CAR.roofG(20.6),CAR.ic.am[2]);r.position.y=4.18;g.add(r);[-6,6].forEach(z=>box(1.5,.25,2.2,dark,0,4.7,z,g));box(2.8,.5,19,dark,0,1.05,0,g);box(1.6,.7,4,dark,0,.75,0,g);[10.5,-10.5].forEach(z=>box(.4,.4,.8,dark,0,.9,z,g));bogies(g);}
+    else{box(3.2,3.2,15.2,CAR.ic.el,0,2.6,0,g);[1,-1].forEach(s=>{const cab=box(3.2,3.2,2.6,M('#1b3f77',{roughness:.3,metalness:.5}),0,2.6,8.7*s,g);cab.rotation.x=-.16*s;const w=box(2.7,1.0,.2,glass,0,3.55,9.85*s,g);w.rotation.x=-.16*s;box(3.24,.2,2.7,M('#b8242a'),0,1.75,8.75*s,g);});
+      const r=new THREE.Mesh(CAR.roofG(17),CAR.ic.el[2]);r.position.y=4.2;g.add(r);[.95,-.95].forEach(x=>{sph(.22,GL('#fff4b8'),x,1.6,10.12,g);sph(.14,GL('#ff3b30'),x,1.25,10.12,g);});sph(.2,GL('#fff4b8'),0,4.45,9.55,g);
+      box(2.8,.5,18.5,dark,0,1.05,0,g);box(2.6,.9,.5,dark,0,.85,10.2,g);box(.4,.4,.9,dark,0,.9,10.6,g);[-2.5,2.5].forEach(z=>box(2,.5,2.4,gm,0,4.45,z,g));panto(5.6,true);panto(-5.6,false);bogies(g);}
   }else{
     const wh=M('#eef1f5',{roughness:.22,metalness:.3}),blue=M('#1b5fc0',{roughness:.3,metalness:.3});
     if(type==='bulletmid'){box(3.2,3.1,20.8,wh,0,2.55,0,g);box(3.26,.8,18.5,glass,0,3.1,0,g);box(3.28,.35,20.84,blue,0,2.2,0,g);}
@@ -189,5 +214,10 @@ const joy={x:0,y:0,id:null};(function(){const el=$('joy'),k=el.querySelector('.k
   el.addEventListener('pointerdown',e=>{audioInit();try{el.setPointerCapture(e.pointerId);}catch(x){}joy.id=e.pointerId;ev(e);});
   el.addEventListener('pointermove',e=>{if(joy.id===e.pointerId)ev(e);});
   const up=e=>{if(joy.id===e.pointerId){joy.id=null;set(0,0);}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);joy.set=set;})();
-const keys={};addEventListener('keydown',e=>{keys[e.key]=1;});addEventListener('keyup',e=>{keys[e.key]=0;});
+const keys={},keyTap={};let kbSeen=false;const kn=e=>e.key.length===1?e.key.toLowerCase():e.key;
+addEventListener('keydown',e=>{const k=kn(e);if(/^Arrow|^ $|^Page/.test(k))e.preventDefault();if(!kbSeen){kbSeen=true;document.body.classList.add('kb');}if(!e.repeat&&keyTap[k]){audioInit();keyTap[k](e);}keys[k]=1;});
+addEventListener('keyup',e=>{keys[kn(e)]=0;});addEventListener('blur',()=>{for(const k in keys)keys[k]=0;});
+/* smoothed keyboard stick so a key press is a gentle push, not full deflection */
+const kst={x:0,y:0};function keyStick(dt){const tx=((keys.ArrowRight||keys.d)?1:0)-((keys.ArrowLeft||keys.a)?1:0),ty=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),f=keys.Shift?1:.62;
+  kst.x+=clamp(tx*f-kst.x,-dt*(tx?2.2:5),dt*(tx?2.2:5));kst.y+=clamp(ty*f-kst.y,-dt*(ty?2.2:5),dt*(ty?2.2:5));return kst;}
 

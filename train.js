@@ -1,6 +1,6 @@
 'use strict';
 /* ---------- train mode ---------- */
-const playerTrain=new Consist(['loco','coach','coach','coach','coach'],1,world),aiTrain=new Consist(['loco','coach','coach','coach'],1,world),aiExp=new Consist(['bullet','bulletmid','bulletmid','bulletT'],1,world),orange=new Consist(['metro','metro','metro','metro'],1,world);
+const playerTrain=new Consist(['loco','coach','coach','coach','coach'],1,world),aiTrain=new Consist(['loco','coach','coach','coach'],1,world),aiExp=new Consist(['hsF','hsC','hsC','hsC','hsC','hsR'],1,world),aiReg=new Consist(['eloco','amc','amc','amc','amc','amc'],1,world),orange=new Consist(['metro','metro','metro','metro'],1,world);
 const head=new THREE.SpotLight(0xfff0cc,1.5,280,.42,.7,1.1);world.add(head,head.target);
 const TR={d:137,v:0,next:1,dwell:0,view:'cab',done:false,bellT:0,ai:RL*.5,exp:false,tf:0,yaw:-1.32,pitch:-.05,cyaw:0,cpitch:0,prov:false,swDone:false,fr:0,clack:0,lm:0,ot:0};
 const LMK=[[HE+30,'Leaving South Station','Leaving South Station'],[300,'Under the highway, yard on the left','Rail yard on the left'],[R1+60,'Down into the Back Bay tunnel!','Here comes the tunnel!'],[T2+40,'Out of the tunnel. Orange Line on the right!','Look right, the Orange Line'],[FHd-120,'Forest Hills and the Arboretum hill','Forest Hills'],
@@ -31,12 +31,24 @@ function drawSpeedo(){const g=cabI.userData.sp.g,mph=TR.v*2.24;g.fillStyle='#0d1
   const a=Math.PI*.8+Math.min(120,mph)/120*Math.PI*1.4;g.strokeStyle='#ff4a3a';g.lineWidth=6;g.beginPath();g.moveTo(128,138);g.lineTo(128+Math.cos(a)*88,138+Math.sin(a)*88);g.stroke();g.fillStyle='#ffe45e';g.font='800 40px Arial';g.fillText(Math.round(mph),128,214);g.font='700 15px Arial';g.fillStyle='#9aa';g.fillText('MPH',128,236);cabI.userData.sp.t.needsUpdate=true;}
 function resetTrain(){TR.swDone=false;setSwitch(false);$('sw').classList.remove('hide');STNP.forEach(q=>q.called=0);TR.d=137;TR.v=0;TR.next=1;TR.dwell=0;TR.done=false;TR.lm=0;STN.forEach(s=>s.called=0);levT.set(0);TR.ai=RL*.5;}
 function setView(v){TR.view=v;$('dash').classList.toggle('hide',v==='cab');cabin.visible=v==='seat';cabI.visible=v==='cab';cam.near=v==='seat'||v==='cab'?.15:(mode==='model'?.3:1);cam.updateProjectionMatrix();}
+const AIS=[{c:aiTrain,v:27,stop:1,name:'commuter train'},{c:aiExp,v:64,stop:0,name:'Acela express',big:1},{c:aiReg,v:44,stop:1,name:'Amtrak regional',big:1}];
+function aiHide(c){if(c.cars[0].position.y>-100)c.cars.forEach(k=>k.position.y=-200);}
 function trainTraffic(dt){
-  TR.ai-=27*dt;if(TR.ai<250||TR.ai<TR.d-500){TR.ai=Math.min(DJ+SL-80,Math.max(TR.d,137)+1700);TR.exp=!TR.exp;}const A=TR.exp?aiExp:aiTrain,Bq=TR.exp?aiTrain:aiExp;A.place(aiPos,TR.ai,-1,.62);if(Bq.cars[0].position.y>-100)Bq.cars.forEach(c=>c.position.y=-200);
+  const lim=TR.prov?DJ+SL-80:DJ-60;
+  if(TR.ai<250||TR.ai<TR.d-560||TR.aiK===undefined){TR.aiK=((TR.aiK===undefined?-1:TR.aiK)+1)%AIS.length;if(!TR.prov&&TR.d>DJ-200&&TR.aiK)TR.aiK=0;TR.ai=Math.min(lim,Math.max(TR.d,137)+1500+AIS[TR.aiK].v*14);TR.aiV=AIS[TR.aiK].v;TR.aiW=0;TR.aiHorn=0;TR.aiStop=-1;}
+  const A=AIS[TR.aiK];
+  /* station stops for the commuter and the regional: slow down, wait, pull away */
+  let vt=A.v;if(TR.ai<HE+260)vt=Math.min(vt,16);
+  if(A.stop){let st=null;for(const q of STNP){const sd=q.d-40;if(sd<TR.ai-1&&sd>TR.ai-420&&q.d!==TR.aiStop&&q.d>HE)st=q;}
+    if(TR.aiW>0){TR.aiW-=dt;vt=0;}else if(st){const rem=TR.ai-(st.d-40);vt=Math.min(vt,Math.max(1.2,Math.sqrt(2*2.6*rem)));if(rem<2.5){TR.aiW=7;TR.aiStop=st.d;vt=0;}}}
+  TR.aiV+=clamp(vt-TR.aiV,-9*dt,(A.big?2.6:1.8)*dt);if(TR.aiV<0)TR.aiV=0;TR.ai-=TR.aiV*dt;
+  A.c.place(aiPos,TR.ai,-1,.62);AIS.forEach(o=>{if(o!==A)aiHide(o.c);});
+  if(mode==='train'&&!TR.aiHorn&&TR.ai-TR.d<330&&TR.ai>TR.d&&TR.aiV>10&&tcover(TR.d)===0){TR.aiHorn=1;[311,370,466].forEach(f=>tone(f,1.1,'sawtooth',.05));if(A.big&&!(TR.dwell>0))msg('👀 Here comes the '+A.name+'!',3200);}
+  if(mode==='train'&&TR.aiHorn===1&&TR.ai<TR.d+30){TR.aiHorn=2;puff(.16,.9,A.v>50?1500:700);}
   TR.ot+=dt;const cyc=TR.ot%64,a=T2-100,b=FHd+52,k=cyc<26?ss(0,26,cyc):cyc<32?1:cyc<58?1-ss(32,58,cyc):0;orange.place((d)=>rpos(d,cyc<32?18:23),a+(b-a)*k,1,.62);
 }
 function updTrain(dt){
-  if(keys.ArrowUp)levT.set(levT.v+dt*.7);if(keys.ArrowDown)levT.set(levT.v-dt*.9);
+  if(keys.ArrowUp||keys.w)levT.set(levT.v+dt*.7);if(keys.ArrowDown||keys.s)levT.set(levT.v-dt*.9);
   const SN=TR.prov?STNP:STN,vmx=TR.prov&&TR.d>DJ+200?46:32;let target=levT.v*vmx;const ns=SN[TR.next],last=TR.next===SN.length-1;
   if(TR.dwell>0){TR.dwell-=dt;target=0;if(TR.dwell<=0&&!TR.done){msg('All aboard! Push the lever up 🟢');say('All aboard!');}}
   if(ns&&!TR.done){const rem=ns.d+52-TR.d;
@@ -77,3 +89,5 @@ function trainIdle(dt){trainTraffic(dt);playerTrain.place(rpos,137,1,.62);hemi.i
   const up=e=>{if(e.pointerId===id)id=null;};canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);})();
 
 $('sw').onclick=()=>{audioInit();if(TR.swDone)return;setSwitch(!TR.prov);msg(TR.prov?'🔀 Switch set: main line to Providence':'🔀 Switch set: branch to Stoughton',3500);say(TR.prov?'Switch set for Providence':'Switch set for Stoughton');};
+
+keyTap.b=()=>{if(mode==='train')$('bell').click();};keyTap.t=()=>{if(mode==='train')$('sw').click();};

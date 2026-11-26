@@ -3,7 +3,7 @@
    mode switching + loop
    ===================================================================== */
 let mode='menu';
-function setMode(m){mode=m;cam.up.set(0,1,0);$('menu').classList.toggle('hide',m!=='menu');$('hud').classList.toggle('hide',m==='menu');
+function setMode(m){mode=m;LBL.forEach(sp=>sp.visible=!(m==='train'&&sp.userData.rail));$('keys').classList.toggle('hide',m!=='fly'&&m!=='train');$('kFly').classList.toggle('hide',m!=='fly');$('kTrain').classList.toggle('hide',m!=='train');cam.up.set(0,1,0);$('menu').classList.toggle('hide',m!=='menu');$('hud').classList.toggle('hide',m==='menu');
   $('hTrain').classList.toggle('hide',m!=='train');$('hFly').classList.toggle('hide',m!=='fly');$('hModel').classList.toggle('hide',m!=='model');$('again').classList.add('hide');
   flyShow(m==='fly');$('pick').classList.add('hide');
   cam.near=m==='model'?.3:1;cam.updateProjectionMatrix();

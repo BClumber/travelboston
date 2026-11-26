@@ -46,7 +46,7 @@ function buildRoads(){
   ROADS.forEach(r=>{const pts=r[2].map(p=>{const q=GEO(p[0],p[1]);return new V3(q[0],0,q[1]);}),c=new THREE.CatmullRomCurve3(pts,false,'centripetal');c.arcLengthDivisions=pts.length*40;const L=c.getLength(),w=r[1],f=(d,o)=>{const u=clamp(d/L,0,1),p=c.getPointAt(u),t=c.getTangentAt(u);p.x-=t.z*o;p.z+=t.x*o;p.y=0;return p;};
     let run=null,lastLab=-900;const flush=e=>{if(run!==null&&e-run>50){const m=strip(f,run,e,-w/2,.13,w/2,.13,mat(w),30,12);m.receiveShadow=true;world.add(m);if(e-run>260)TRAF.runs.push({f,a:run,len:e-run,w});}run=null;};
     for(let d=0;d<=L;d+=30){const p=f(d,0);if(okR(p.x,p.z)){if(run===null)run=d;EXC.push([p.x,p.z,w/2+9]);
-        if(d-lastLab>1300&&d>120&&d<L-120){lastLab=d;const t=c.getTangentAt(clamp(d/L,0,1)),hw=w>20,lb=new THREE.Mesh(new THREE.PlaneGeometry(hw?64:46,hw?16:11.5),new THREE.MeshBasicMaterial({map:signTex(r[0],hw?'#0f3f8a':'#1c5a2e','#ffffff'),transparent:true,opacity:.95,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5}));lb.rotation.x=-Math.PI/2;lb.rotation.z=Math.atan2(t.x,t.z)+Math.PI/2;lb.position.set(p.x-t.z*(w/2+(hw?14:10)),.2,p.z+t.x*(w/2+(hw?14:10)));world.add(lb);}}
+        if(d-lastLab>1300&&d>120&&d<L-120&&nearMain(p.x,p.z)[0]>110&&nearRoute(p.x,p.z)[0]>110){lastLab=d;const t=c.getTangentAt(clamp(d/L,0,1)),hw=w>20,lb=new THREE.Mesh(new THREE.PlaneGeometry(hw?64:46,hw?16:11.5),new THREE.MeshBasicMaterial({map:signTex(r[0],hw?'#0f3f8a':'#1c5a2e','#ffffff'),transparent:true,opacity:.95,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5}));lb.rotation.x=-Math.PI/2;lb.rotation.z=Math.atan2(t.x,t.z)+Math.PI/2;lb.position.set(p.x-t.z*(w/2+(hw?14:10)),.2,p.z+t.x*(w/2+(hw?14:10)));world.add(lb);}}
       else flush(d-30);}
     flush(L);});
 }
@@ -145,8 +145,8 @@ function buildRegion(){
     const lawn=new THREE.Mesh(new THREE.CircleGeometry(90,28),flat('#4f8a3a',1.4));lawn.rotation.x=-Math.PI/2;lawn.position.set(-3440,.1,12320);world.add(lawn); }
   /* towns + woods all the way down */
   const towns=[[-1950,5350,230],[-2330,7000,260],[-2180,8350,260],[-2700,10250,330],[-2950,11750,360],[-3300,12950,330],[-3900,13800,260],[-600,6500,220],[-4200,9400,220],[900,8200,240],[-700,10400,240],[-1500,12600,260],[600,13200,220],[-4700,12200,240]];
-  const H=[],T=[],okp=(x,z)=>pip(x,z,MAIN)&&EXC.every(c=>(x-c[0])**2+(z-c[1])**2>c[2]*c[2])&&Math.hypot(x+4050,z-14500)>620&&!(x>-3660&&x<-3000&&z>12180&&z<12790);
-  towns.forEach(t=>{for(let i=0;i<t[2]*.6;i++){const a=rnd(0,6.283),r=t[2]*Math.sqrt(Math.random()),x=t[0]+Math.cos(a)*r,z=t[1]+Math.sin(a)*r;if(okp(x,z))(i%3?H:T).push([x,z]);}
+  const H=[],T=[],okp=(x,z)=>pip(x,z,MAIN)&&EXC.every(c=>(x-c[0])**2+(z-c[1])**2>c[2]*c[2])&&Math.hypot(x+4050,z-14500)>620&&!(x>-3660&&x<-3000&&z>12180&&z<12790)&&nearMain(x,z)[0]>34&&nearRoute(x,z)[0]>34;
+  towns.forEach(t=>{{let g=0;while(nearMain(t[0],t[1])[0]<130&&g++<20)t[0]+=20;}for(let i=0;i<t[2]*.6;i++){const a=rnd(0,6.283),r=t[2]*Math.sqrt(Math.random()),x=t[0]+Math.cos(a)*r,z=t[1]+Math.sin(a)*r;if(okp(x,z))(i%3?H:T).push([x,z]);}
     if(okp(t[0],t[1])){const wh=M('#f1efe8',{roughness:.7});box(9,8,16,wh,t[0],4,t[1],world);box(4,16,4,wh,t[0],8,t[1]-9,world);const s=cyl(0,2.4,9,M('#3a3d44'),t[0],20.5,t[1]-9,world,4);s.rotation.y=Math.PI/4;sbox(34,12,18,t[0]+40,6,t[1]+30,.4,bt[2],14);cyl(4,4,5,M('#9fb7c8',{metalness:.5,roughness:.5}),t[0]-50,24,t[1]+20,world,12);cyl(.8,.8,22,M('#888'),t[0]-50,11,t[1]+20,world,6);}});
   for(let i=0;i<9000;i++){const x=rnd(-5600,2600),z=rnd(5900,16800);if(okp(x,z)&&fbm(((x+6000)/9000)%1,((z)/9000)%1,8)>.42)T.push([x,z]);}
   for(let i=0;i<1500;i++){const x=rnd(-6000,-3650),z=rnd(-1500,5900);if(okp(x,z))T.push([x,z]);}
