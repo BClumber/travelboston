@@ -48,7 +48,7 @@ function buildRoute(dest,heli){
 }
 function setFlyView(v){F.view=v;F.lyaw=0;F.lpitch=0;cam.near=v==='cockpit'?.12:1;cam.updateProjectionMatrix();Object.values(craft).forEach(c=>{c.userData.ck.visible=v==='cockpit'&&c===PL;});}
 function flyShow(on){beacon.visible=blabel.visible=on&&F.phase!=='pick';Object.values(craft).forEach(c=>c.visible=on&&c===PL);if(!on){RINGS.forEach(r=>r.g.visible=false);world.fog.far=8200;}else world.fog.far=11500;}
-function openPicker(){F.phase='pick';beacon.visible=blabel.visible=false;$('pick').classList.remove('hide');$('hFly').classList.add('hide');$('again').classList.add('hide');RINGS.forEach(r=>r.g.visible=false);Object.values(craft).forEach(c=>c.visible=false);setFlyView('chase');msg('Pick a plane and where to fly!',4000);}
+function openPicker(){F.phase='pick';beacon.visible=blabel.visible=false;$('pick').classList.remove('hide');$('hFly').classList.add('hide');$('again').classList.add('hide');RINGS.forEach(r=>r.g.visible=false);Object.values(craft).forEach(c=>c.visible=false);setFlyView('chase');$('msg').style.opacity=0;}
 function startFlight(){
   const S=ACS[F.type],heli=!!S.heli;
   if(!craft[F.type]){const m=S.make();m.rotation.order='YXZ';const ck=makeCockpit(heli);ck.position.set(0,S.ck[0],S.ck[1]);ck.scale.setScalar(S.ck[2]);ck.visible=false;m.add(ck);m.userData.ck=ck;m.userData.props=m.userData.props||[];world.add(m);craft[F.type]=m;}
@@ -66,7 +66,8 @@ document.querySelectorAll('#pDS button').forEach(b=>b.onclick=()=>{F.dest=b.data
 $('auto').onclick=()=>{F.auto=!F.auto;$('auto').classList.toggle('on',F.auto);msg(F.auto?'🤖 Autopilot on. Steer any time to take over':'✋ You have the controls',3500);};
 $('pGo').onclick=()=>{audioInit();startFlight();};
 function callout(k,t){if(!F.call[k]){F.call[k]=1;say(t);}}
-function flyDone(A,heli){F.done=true;levF.set(0);addStar(3);msg('🎉 Welcome to '+A.name+'!',9000);say('Welcome to '+A.name+'. Great flying, captain!');snd.fanfare();confetti();$('again').classList.remove('hide');}
+function flyDone(A,heli){F.done=true;levF.set(0);addStar(3);msg('🎉 Yay! You landed at '+A.name+'! Congratulations, captain! 🎉',7500);say('Yay! You landed at '+A.name+'. Congratulations, captain!');snd.fanfare();confetti();setTimeout(()=>{if(mode==='fly'&&F.done){confetti();snd.ding();}},1800);
+  const id=F.fid=(F.fid||0)+1;setTimeout(()=>{if(mode==='fly'&&F.done&&F.fid===id)setMode('menu');},7500);}
 function drawPanels(T,dist,ang,A){
   const u=PL.userData.ck.userData,g=u.pfd.g;g.save();g.beginPath();g.rect(0,0,256,256);g.clip();g.translate(128,118);g.rotate(-F.roll);g.translate(0,F.pitch*230);g.fillStyle='#2a7fd6';g.fillRect(-400,-500,800,500);g.fillStyle='#7a4a22';g.fillRect(-400,0,800,500);
   g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(-400,0);g.lineTo(400,0);g.stroke();for(let p=-30;p<=30;p+=10){if(!p)continue;const y=-p*Math.PI/180*230;g.beginPath();g.moveTo(-26,y);g.lineTo(26,y);g.stroke();}g.restore();
