@@ -6,6 +6,16 @@ const LBL=[];function label(name,x,y,z,s){const t=cvs(512,96,(g,w,h)=>{g.clearRe
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false})),k=s||1;sp.scale.set(170*k,32*k,1);sp.position.set(x,y,z);world.add(sp);sp.userData.rail=Math.min(nearRoute(x,z)[0],nearMain(x,z)[0])<260;LBL.push(sp);return sp;}
 function green(x,z,rx,rz,c){const m=new THREE.Mesh(new THREE.CircleGeometry(1,32),flat(c||'#4f7a3a',1.6));m.rotation.x=-Math.PI/2;m.scale.set(rx,rz,1);m.position.set(x,.12,z);world.add(m);return m;}
 function dog(x,z,c,ry){const g=new THREE.Group(),m=M(c,{roughness:.9});box(.5,.5,1.2,m,0,.75,0,g);box(.42,.42,.5,m,0,1.05,.75,g);box(.16,.3,.1,m,0,.95,-.68,g).rotation.x=-.6;[[.18,.4],[-.18,.4],[.18,-.4],[-.18,-.4]].forEach(a=>box(.14,.55,.14,m,a[0],.27,a[1],g));g.position.set(x,0,z);g.rotation.y=ry||0;g.scale.setScalar(1.5);world.add(g);}
+function mkMoS(base){const g=new THREE.Group(),br=M('#b9a58c',{roughness:.9}),dkb=M('#8c6f58',{roughness:.9}),gl=M('#27425c',{roughness:.15,metalness:.7}),wh=M('#eceae4'),gn=M('#3f8f45',{roughness:.8});
+  box(150,base,70,M('#8f9488',{roughness:1}),0,-base/2,0,g);box(96,15,30,br,-8,7.5,0,g);box(96,1.2,31,wh,-8,15.4,0,g);for(let x=-50;x<=34;x+=7)box(4,8,.4,gl,x,7.5,15.2,g);for(let x=-50;x<=34;x+=7)box(4,8,.4,gl,x,7.5,-15.2,g);
+  box(16,46,16,br,0,23,0,g);box(17,2,17,wh,0,46.6,0,g);box(12,9,.4,gl,0,34,8.2,g);box(12,9,.4,gl,0,34,-8.2,g);
+  const dm=new THREE.Mesh(new THREE.SphereGeometry(15,24,12,0,6.283,0,Math.PI/2),M('#d5dbe0',{metalness:.75,roughness:.25}));dm.position.set(-58,6,2);g.add(dm);cyl(15.4,15.4,6,wh,-58,3,2,g,24);
+  box(34,11,34,dkb,56,5.5,0,g);[2.2,5.8,9.4].forEach(y=>box(34.6,.9,34.6,wh,56,y,0,g));
+  const t=cvs(1024,128,(c,w,h)=>{c.fillStyle='#1d3557';c.fillRect(0,0,w,h);c.fillStyle='#fff';c.font='800 78px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('MUSEUM OF SCIENCE',w/2,h/2+4);}),sm=new THREE.MeshBasicMaterial({map:t});[1,-1].forEach(k=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(44,5.5),sm);p.position.set(-8,19,k*15.9);p.rotation.y=k>0?0:Math.PI;g.add(p);box(46,7,.5,wh,-8,19,k*15.5,g);});
+  /* the dinosaur out front (both sides, so every train sees one) */
+  [1,-1].forEach(k=>{const d=new THREE.Group();d.position.set(26,0,k*26);d.rotation.y=k>0?.5:Math.PI-.5;g.add(d);const b=sph(3,gn,0,7.2,0,d);b.scale.set(1.9,1.1,1);const tl=cyl(.2,1.9,8,gn,-7.4,6.6,0,d,8);tl.rotation.z=-1.25;const nk=cyl(1.2,1.7,4.4,gn,4.6,9.6,0,d,8);nk.rotation.z=-.55;const hd=box(4.4,2.3,2.2,gn,7.2,11.8,0,d);hd.rotation.z=.08;box(3.6,.5,1.9,M('#f4f1e8'),7.6,10.75,0,d);[-1.15,1.15].forEach(z=>{sph(.3,M('#111'),7.6,12.5,z,d);cyl(.8,.6,5.2,gn,.4,2.6,z*1.2,d,8);box(2.2,.6,1.2,gn,1,.3,z*1.2,d);cyl(.3,.2,1.6,gn,4.2,7,z,d,6).rotation.z=-1;});});
+  for(let i=0;i<8;i++){const x=-66+i*19,tk=cyl(.4,.5,4,M('#5b4630'),x,2,-30,g,6),lf=new THREE.Mesh(new THREE.IcosahedronGeometry(3.4,1),new THREE.MeshStandardMaterial({color:C('#3f7a3a'),roughness:1,flatShading:true}));lf.position.set(x,6.4,-30);g.add(lf);}
+  return g;}
 function buildPlaces(){
   const brick=bt[2],lime=new THREE.MeshStandardMaterial({color:C('#d8d0bd'),roughness:.85}),wh=M('#f1efe8',{roughness:.7}),slate=M('#3a3d44',{roughness:.8}),col=(x,y,z,h,r,m)=>cyl(r,r,h,m||lime,x,y,z,world,10);
   /* North End + Old North Church */
