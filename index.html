@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Travel Boston">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>@font-face{font-family:"Baloo 2";font-weight:600;font-display:swap;src:url(baloo-600.woff2) format("woff2")}@font-face{font-family:"Baloo 2";font-weight:800;font-display:swap;src:url(baloo-800.woff2) format("woff2")}</style>
 <style>
 #keys{position:fixed;left:10px;top:216px;z-index:6;display:none;font-size:13px;line-height:1.5;font-weight:600;font-family:system-ui,sans-serif}
 @media (pointer:fine){#keys{display:block}}body.kb #keys{display:block}
@@ -114,6 +114,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 #stars,#snext,#anext,#adash{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4)}
 .card{background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
 @media (orientation:landscape){#tbig3{top:auto;bottom:14px;max-width:calc(100% - 310px)}#tbig3 b{white-space:normal}}
+#offl{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:8;padding:6px 14px;border-radius:16px;background:rgba(20,26,54,.72);color:#fff;font-size:14px;font-weight:600;pointer-events:none;transition:opacity .6s}
 /* play timer */
 #tset{position:fixed;top:10px;right:10px;z-index:8;height:44px;padding:0 16px;border-radius:22px;border:0;background:rgba(255,255,255,.9);font:inherit;font-weight:800;font-size:16px;color:#1d2440;box-shadow:0 4px 0 #0003}
 #tmr{position:fixed;top:17px;left:146px;z-index:5;height:44px;padding:0 14px;border-radius:22px;background:rgba(255,255,255,.9);font-weight:800;font-size:20px;display:flex;align-items:center;gap:4px;box-shadow:0 4px 0 #0003;pointer-events:none}
@@ -128,6 +129,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 <button id="tset" class="hide" aria-label="Play timer">⏱️ Off</button>
 <div id="tmr" class="hide">⏳ <b>5</b></div><div id="tbar" class="hide"><i></i></div>
 <div id="tdone" class="hide"><span>🌙</span><h2>All done!</h2><p>Bye bye, trains! 👋</p><button id="tmore"><i></i>Grown-ups: hold for more time</button></div>
+<div id="offl" class="hide">✅ Saved. Works with no internet</div>
 <div id="film"></div><div id="grain"></div><div id="fade"></div>
 
 <div id="menu">
@@ -269,7 +271,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="three.min.js"></script>
 <script src="core.js"></script>
 <script src="world.js"></script>
 <script src="aircraft.js"></script>
@@ -283,5 +285,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 <script src="acela.js"></script>
 <script src="subway.js"></script>
 <script src="main.js"></script>
-<script>if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+<script>if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))addEventListener("load",()=>{const sw=navigator.serviceWorker;
+  sw.addEventListener("message",e=>{if(e.data&&e.data.saved){window.__offlineReady=true;let seen="";try{seen=localStorage.getItem("tb_off")||"";}catch(x){}const o=document.getElementById("offl");if(o&&!seen){o.classList.remove("hide");setTimeout(()=>{o.style.opacity=0;},5000);try{localStorage.setItem("tb_off","1");}catch(x){}}}});
+  sw.register("sw.js").then(()=>sw.ready).then(r=>{const ask=()=>r.active&&r.active.postMessage("check");ask();setTimeout(ask,4000);setTimeout(ask,12000);}).catch(()=>{});});</script>
 </body></html>
