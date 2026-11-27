@@ -73,7 +73,7 @@ function updTrain(dt){
   /* camera */
   const sway=Math.sin(performance.now()*.0031)*.004*TR.v/32+Math.sin(performance.now()*.0113)*.002*TR.v/32;
   if(TR.view==='nose'){const p=tP(TR.d+.8,0,3.9),l=tP(TR.d+45,0,2.6);cam.position.copy(p);cam.lookAt(l);cam.rotateZ(sway);}
-  else if(TR.view==='cab'){const c=playerTrain.cars[0];c.updateMatrixWorld();cam.position.copy(c.localToWorld(new V3(-.72,3.66+sway*3,8.5)));cam.quaternion.copy(c.quaternion).multiply(QYs).multiply(_q.setFromEuler(_e.set(TR.cpitch-.07,TR.cyaw,sway*2,'YXZ')));cabI.userData.lev.rotation.x=.55-levT.v*1.1;if((TR.fr++&7)===0)drawSpeedo();}
+  else if(TR.view==='cab'){const c=playerTrain.cars[0];c.updateMatrixWorld();cam.position.copy(c.localToWorld(new V3(-.72,3.82+sway*3,9.12)));cam.quaternion.copy(c.quaternion).multiply(QYs).multiply(_q.setFromEuler(_e.set(TR.cpitch-.02,TR.cyaw,sway*2,'YXZ')));cabI.userData.lev.rotation.x=.55-levT.v*1.1;if((TR.fr++&7)===0)drawSpeedo();}
   else if(TR.view==='seat'){const c=playerTrain.cars[1];c.updateMatrixWorld();cam.position.copy(c.localToWorld(new V3(-.66,2.86+sway*4,1.88)));cam.quaternion.copy(c.quaternion).multiply(QYs).multiply(_q.setFromEuler(_e.set(TR.pitch,TR.yaw,sway*2,'YXZ')));}
   else{const c2=tcover(TR.d-30),want=c2===2?tP(TR.d-46,0,TR.d<HE+40?7:5.9):c2===1?tP(TR.d-62,-3.5,12.5):tP(TR.d-78,-20,17);if(cam.position.distanceTo(want)>220)cam.position.copy(want);else cam.position.lerp(want,1-Math.exp(-dt*3.2));cam.lookAt(tP(TR.d-14,0,3));}
   {const f=tP(TR.d+(TR.view==='cab'||TR.view==='nose'?40:-30),0,0);sunFollow(f.x,f.y,f.z,TR.view==='cab'||TR.view==='nose'?150:185);}

@@ -35,7 +35,7 @@ function frame(now){
   if(mode==='menu'){mt+=dt;const a=mt*.06+2.2;cam.position.set(-120+Math.sin(a)*520,170,-180+Math.cos(a)*520);cam.lookAt(-150,40,-260);trainIdle(dt);sunFollow(-200,0,-380,760);}
   if(mode!=='model'&&mode!=='tunnel'&&mode!=='acela'&&mode!=='subway'){updTraffic(dt);updLife(dt);}
   if(window.__dbgCam){const q=window.__dbgCam;cam.position.set(q[0],q[1],q[2]);cam.lookAt(q[3],q[4],q[5]);}
-  if(mode==='model')renderer.render(model.scene,cam);else if(mode==='tunnel')renderer.render(tun.scene,cam);else if(mode==='acela')renderer.render(ace.scene,cam);else if(mode==='subway')renderer.render(sub.scene,cam);else{sky.position.copy(cam.position);sunSpr.position.copy(cam.position).addScaledVector(SD,10500);waterN.offset.x+=dt*.012;waterN.offset.y+=dt*.007;renderer.render(world,cam);}
+  if(mode==='model')renderer.render(model.scene,cam);else if(mode==='tunnel')renderer.render(tun.scene,cam);else if(mode==='acela')renderer.render(ace.scene,cam);else if(mode==='subway')renderer.render(sub.scene,cam);else{sky.position.copy(cam.position);sunSpr.position.copy(cam.position).addScaledVector(SD,10500);WU.uT.value+=dt;renderer.render(world,cam);}
   fAcc+=(now-lastRaw)/1000;lastRaw=now;if(++fN>=80){const fps=fN/fAcc;fAcc=0;fN=0;if(fps<24&&!window.__noAdapt&&qLevel<2){qLevel++;if(qLevel===1){PR=Math.min(PR,1.3);renderer.setPixelRatio(PR);resize();}else{sun.castShadow=false;if(model)model.scene.traverse(o=>{if(o.isDirectionalLight)o.castShadow=false;});}}}
   requestAnimationFrame(frame);
 }
