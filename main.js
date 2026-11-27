@@ -4,7 +4,7 @@
    ===================================================================== */
 let mode='menu';
 function setMode(m){mode=m;LBL.forEach(sp=>sp.visible=m==='fly'||(m==='train'&&!sp.userData.rail));$('keys').classList.toggle('hide',m!=='fly'&&m!=='train');$('kFly').classList.toggle('hide',m!=='fly');$('kTrain').classList.toggle('hide',m!=='train');cam.up.set(0,1,0);$('menu').classList.toggle('hide',m!=='menu');$('hud').classList.toggle('hide',m==='menu');
-  $('hTrain').classList.toggle('hide',m!=='train');$('hFly').classList.toggle('hide',m!=='fly');$('hModel').classList.toggle('hide',m!=='model');$('hTun').classList.toggle('hide',m!=='tunnel');$('again').classList.add('hide');
+  $('hTrain').classList.toggle('hide',m!=='train');$('hFly').classList.toggle('hide',m!=='fly');$('hModel').classList.toggle('hide',m!=='model');$('hTun').classList.toggle('hide',m!=='tunnel');$('hAc').classList.toggle('hide',m!=='acela');$('again').classList.add('hide');
   flyShow(m==='fly');$('pick').classList.add('hide');
   cam.near=(m==='model'||m==='tunnel')?.3:1;cam.updateProjectionMatrix();
   setView('cab');if(m!=='train'){hemi.intensity=.4;CAR.all.forEach(q=>q.envMapIntensity=1);}
@@ -12,6 +12,7 @@ function setMode(m){mode=m;LBL.forEach(sp=>sp.visible=m==='fly'||(m==='train'&&!
   if(m==='fly')openPicker();
   if(m==='model'){if(!model)buildModel();MT.ride=false;msg('Tap ✏️ and draw your own track!',6000);}
   if(m==='tunnel'){if(!tun)buildTunnel();tReset();$('msg').style.opacity=0;tBig('🚗','Push the lever up to drive!',6000);}
+  if(m==='acela'){if(!ace)buildAcela();aReset();$('msg').style.opacity=0;aBig('🚄','Push the lever up to go!',6000);say('All aboard! Push the lever up to go.');}
   if(m==='menu'){engine(0,200,0,40);try{speechSynthesis.cancel();}catch(e){}}
 }
 /* phones: go full screen and turn the game sideways, even when the phone or the app showing it will not rotate */
@@ -22,21 +23,21 @@ $('turn').onclick=goWide;
 ['orientationchange','fullscreenchange'].forEach(ev=>addEventListener(ev,()=>{resize();setTimeout(resize,250);setTimeout(resize,800);}));if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',()=>{setTimeout(resize,250);});if(window.visualViewport)visualViewport.addEventListener('resize',()=>resize());
 $('home').onclick=()=>setMode('menu');
 $('mute').onclick=()=>{muted=!muted;$('mute').textContent=muted?'🔇':'🔊';if(master)master.gain.value=muted?0:.8;if(muted)try{speechSynthesis.cancel();}catch(e){}};
-$('camb').onclick=()=>{if(mode==='train'){const nv={cab:'nose',nose:'seat',seat:'out',out:'cab'}[TR.view];setView(nv);msg({cab:"🚆 Driver's cab. Drag to look around",nose:'📷 Front camera',seat:'💺 Passenger seat. Drag to look around',out:'🎥 Outside view'}[nv],3000);}else if(mode==='fly'&&FL.phase!=='pick'){setFlyView(FL.view==='chase'?'cockpit':'chase');msg(FL.view==='cockpit'?'🧑‍✈️ Cockpit. Drag to look around':'🎥 Outside view',3000);}else if(mode==='model')MT.ride=!MT.ride;else if(mode==='tunnel'){TU.view=TU.view==='chase'?'drive':'chase';if(TU.xray)tXray(false);msg(TU.view==='drive'?"🧑 Driver's seat":'🎥 Outside view',2500);}};
+$('camb').onclick=()=>{if(mode==='train'){const nv={cab:'nose',nose:'seat',seat:'out',out:'cab'}[TR.view];setView(nv);msg({cab:"🚆 Driver's cab. Drag to look around",nose:'📷 Front camera',seat:'💺 Passenger seat. Drag to look around',out:'🎥 Outside view'}[nv],3000);}else if(mode==='fly'&&FL.phase!=='pick'){setFlyView(FL.view==='chase'?'cockpit':'chase');msg(FL.view==='cockpit'?'🧑‍✈️ Cockpit. Drag to look around':'🎥 Outside view',3000);}else if(mode==='model')MT.ride=!MT.ride;else if(mode==='acela'){AC_.view={out:'nose',nose:'side',side:'out'}[AC_.view];msg({out:'🎥 Outside view',nose:'📷 Front of the train',side:'💺 Window seat'}[AC_.view],2500);}else if(mode==='tunnel'){TU.view=TU.view==='chase'?'drive':'chase';if(TU.xray)tXray(false);msg(TU.view==='drive'?"🧑 Driver's seat":'🎥 Outside view',2500);}};
 $('horn').onclick=()=>{audioInit();snd.horn();};$('bell').onclick=()=>{audioInit();snd.bell();setTimeout(snd.bell,400);};
 $('again').onclick=()=>{$('again').classList.add('hide');if(mode==='train'){resetTrain();msg('Push the lever up to go! 🚆');}else if(mode==='fly')openPicker();};
 
 let last=performance.now(),mt=0,lastRaw=performance.now(),fAcc=0,fN=0,qLevel=0;
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
-  for(let w=0;w<(window.__warp||1);w++){if(mode==='train')updTrain(dt);else if(mode==='fly')updFly(dt);else if(mode==='model')updModel(dt);else if(mode==='tunnel')updTunnel(dt);}
+  for(let w=0;w<(window.__warp||1);w++){if(mode==='train')updTrain(dt);else if(mode==='fly')updFly(dt);else if(mode==='model')updModel(dt);else if(mode==='tunnel')updTunnel(dt);else if(mode==='acela')updAcela(dt);}
   if(mode==='menu'){mt+=dt;const a=mt*.06+2.2;cam.position.set(-120+Math.sin(a)*520,170,-180+Math.cos(a)*520);cam.lookAt(-150,40,-260);trainIdle(dt);sunFollow(-200,0,-380,760);}
-  if(mode!=='model'&&mode!=='tunnel'){updTraffic(dt);updLife(dt);}
+  if(mode!=='model'&&mode!=='tunnel'&&mode!=='acela'){updTraffic(dt);updLife(dt);}
   if(window.__dbgCam){const q=window.__dbgCam;cam.position.set(q[0],q[1],q[2]);cam.lookAt(q[3],q[4],q[5]);}
-  if(mode==='model')renderer.render(model.scene,cam);else if(mode==='tunnel')renderer.render(tun.scene,cam);else{sky.position.copy(cam.position);sunSpr.position.copy(cam.position).addScaledVector(SD,10500);waterN.offset.x+=dt*.012;waterN.offset.y+=dt*.007;renderer.render(world,cam);}
+  if(mode==='model')renderer.render(model.scene,cam);else if(mode==='tunnel')renderer.render(tun.scene,cam);else if(mode==='acela')renderer.render(ace.scene,cam);else{sky.position.copy(cam.position);sunSpr.position.copy(cam.position).addScaledVector(SD,10500);waterN.offset.x+=dt*.012;waterN.offset.y+=dt*.007;renderer.render(world,cam);}
   fAcc+=(now-lastRaw)/1000;lastRaw=now;if(++fN>=80){const fps=fN/fAcc;fAcc=0;fN=0;if(fps<24&&!window.__noAdapt&&qLevel<2){qLevel++;if(qLevel===1){PR=Math.min(PR,1.3);renderer.setPixelRatio(PR);resize();}else{sun.castShadow=false;if(model)model.scene.traverse(o=>{if(o.isDirectionalLight)o.castShadow=false;});}}}
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__sim={TU,levU,setMode,setView,TR,FL,MT,levT,levF,joy,STN,RL,XING,APT,startFlight,setFlyView,STNP,PST,SL,setSwitch,GEO,K:{VD,VRA,BB,RG,T1,T2,R1,HP,R128,CJ,CC,ST,FHd,DJ,HE}};
+window.__sim={TU,levU,AC_,levA,AST,setMode,setView,TR,FL,MT,levT,levF,joy,STN,RL,XING,APT,startFlight,setFlyView,STNP,PST,SL,setSwitch,GEO,K:{VD,VRA,BB,RG,T1,T2,R1,HP,R128,CJ,CC,ST,FHd,DJ,HE}};
 LBL.forEach(sp=>sp.visible=false);
