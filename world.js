@@ -93,8 +93,12 @@ function polyMesh(poly,mat,y,holes){const s=new THREE.Shape();poly.forEach((p,i)
 /* ---------- PASS 2: materials ---------- */
 /* water: three layers of moving ripples in world space, so river, harbour and sea all match */
 const WU={uT:{value:0},uN:{value:.06}};
-function waterHook(m){m.normalMap=waterN;m.onBeforeCompile=s=>{s.uniforms.uT=WU.uT;s.uniforms.uN=WU.uN;
-  s.vertexShader='varying vec2 vW;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvW=(modelMatrix*vec4(position,1.)).xz/150.;');
+/* every side scene (Fast Train, Tunnel, Subway) shares the same golden-hour sky, sun and fill */
+function goldDome(s){const d=new THREE.Mesh(new THREE.SphereGeometry(9000,24,14),skyMat());d.frustumCulled=false;d.renderOrder=-10;d.userData.keep=d.userData.dyn=true;d.onBeforeRender=(r,sc,c)=>{d.position.copy(c.position);d.updateMatrixWorld();};s.add(d);return d;}
+function goldLights(hemi,sun){hemi.color.copy(C(LOOK.fill));hemi.groundColor.copy(C(LOOK.bounce));sun.color.copy(C(LOOK.sun));sun.position.copy(SD);}
+const GOLD={h:.95,s:2.7};
+function waterHook(m,sc){const uS={value:sc||1};m.normalMap=waterN;m.onBeforeCompile=s=>{s.uniforms.uT=WU.uT;s.uniforms.uN=WU.uN;s.uniforms.uS=uS;
+  s.vertexShader='uniform float uS;varying vec2 vW;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvW=(modelMatrix*vec4(position,1.)).xz/150.*uS;');
   s.fragmentShader='uniform float uT,uN;varying vec2 vW;\n'+s.fragmentShader.replace('#include <normal_fragment_maps>','{vec2 wa=(texture2D(normalMap,vW+vec2(uT*.012,uT*.007)).xy*2.-1.)+(texture2D(normalMap,vW*2.7+vec2(-uT*.021,uT*.016)).xy*2.-1.)*.8+(texture2D(normalMap,vW*.23+vec2(uT*.004,-uT*.003)).xy*2.-1.)*.5;normal=normalize((viewMatrix*vec4(normalize(vec3(wa.x*uN,1.,wa.y*uN)),0.)).xyz);}');};return m;}
 function dataTex(c){const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=ANISO;return t;}
 function mkCan(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);return c;}

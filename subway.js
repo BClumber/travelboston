@@ -30,15 +30,15 @@ const sbUnder=k=>k==='t'||k==='h'||k==='hall';
 function buildSubway(li){
   if(sub){sub.scene.traverse(o=>{if(o.geometry)o.geometry.dispose();});}
   const L=SUBL[li],Z=sbZones(L);SBU=[];for(let i=0;i<Z.length;i++){if(!sbUnder(Z[i][2]))continue;const u=[Z[i][0],Z[i][1]];while(i+1<Z.length&&sbUnder(Z[i+1][2])){i++;u[1]=Z[i][1];}if(u[0]<=Z[0][0])u[0]-=300;if(u[1]>=Z[Z.length-1][1])u[1]+=300;SBU.push(u);}
-  const s=new THREE.Scene(),sky=C('#9fcdf0');s.background=sky.clone();s.fog=new THREE.Fog(sky.clone(),300,2200);s.environment=ENV;
-  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.8),sun=new THREE.DirectionalLight(0xfff0d6,1.9);sun.position.set(.6,1,.35);s.add(hemi,sun);const lamp=new THREE.PointLight(0xfff1cf,0,90,1.5),head=new THREE.SpotLight(0xfff6dc,0,150,.55,.6,1.1),ht=new THREE.Object3D();s.add(lamp,head,ht);head.target=ht;
+  const s=new THREE.Scene(),sky=C(HAZE);s.background=sky.clone();s.fog=new THREE.Fog(sky.clone(),300,2200);s.environment=ENV;
+  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.8),sun=new THREE.DirectionalLight(0xfff0d6,1.9);goldLights(hemi,sun);s.add(hemi,sun);const lamp=new THREE.PointLight(0xfff1cf,0,90,1.5),head=new THREE.SpotLight(0xfff6dc,0,150,.55,.6,1.1),ht=new THREE.Object3D();s.add(lamp,head,ht);head.target=ht;
   const add=m=>{s.add(m);return m;},dbl=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:C(c),roughness:.95,side:THREE.DoubleSide},o||{})),at=(o,y)=>d=>sbP(d,o,y),lc=L.col,rnd2=(a,b)=>a+Math.random()*(b-a),side=()=>Math.random()<.5?-1:1;
   const T=(t,o)=>new THREE.MeshStandardMaterial(Object.assign({map:t,roughness:.8,side:THREE.DoubleSide,envMapIntensity:.2},o||{}));
   /* textures: canvas x runs across the strip (bottom to top on walls), canvas y along it */
   const tunT=rep(cvs(128,256,(c,w,h)=>{c.fillStyle='#4b4d52';c.fillRect(0,0,w,h);for(let i=0;i<900;i++){const k=50+Math.random()*50;c.fillStyle='rgba('+k+','+k+','+k+',.5)';c.fillRect(Math.random()*w,Math.random()*h,2,3);}c.fillStyle='#17181b';[.5,.56,.62].forEach(x=>c.fillRect(w*x,0,3,h));c.fillStyle='#6a6d73';c.fillRect(0,h*.5,w,4);c.fillStyle='#2b2d31';c.fillRect(0,0,w*.12,h);}),1,1);
   const tileT=rep(cvs(256,256,(c,w,h)=>{c.fillStyle='#ecebe6';c.fillRect(0,0,w,h);for(let x=0;x<w;x+=16)for(let y=0;y<h;y+=32){const k=224+Math.random()*24;c.fillStyle='rgb('+k+','+k+','+(k-4)+')';c.fillRect(x+1,y+1,14,30);}c.fillStyle='#35373c';c.fillRect(0,0,w*.07,h);c.fillStyle=lc;c.fillRect(w*.56,0,w*.11,h);c.fillStyle='rgba(0,0,0,.12)';c.fillRect(w*.67,0,2,h);}),1,1);
   const bedT=rep(cvs(128,64,(c,w,h)=>{c.fillStyle='#5a564f';c.fillRect(0,0,w,h);for(let i=0;i<500;i++){const k=70+Math.random()*60;c.fillStyle='rgb('+k+','+(k-4)+','+(k-10)+')';c.fillRect(Math.random()*w,Math.random()*h,2,2);}c.fillStyle='#3d3429';[[.16,.44],[.56,.84]].forEach(q=>{c.fillRect(w*q[0],h*.2,w*(q[1]-q[0]),h*.3);c.fillRect(w*q[0],h*.7,w*(q[1]-q[0]),h*.3);});}),1,1);
-  const tunM=T(tunT),tileM=T(tileT,{roughness:.35,emissive:new THREE.Color(0xffffff),emissiveMap:tileT,emissiveIntensity:.34}),conc=dbl('#b3b6ba'),dark=dbl('#2b2e33'),stone=dbl('#9a9288'),pave=dbl('#6f747a'),grass=dbl('#587f42'),water=new THREE.MeshStandardMaterial({color:C('#2f7fb5'),roughness:.18,metalness:.35,side:THREE.DoubleSide});
+  const tunM=T(tunT),tileM=T(tileT,{roughness:.35,emissive:new THREE.Color(0xffffff),emissiveMap:tileT,emissiveIntensity:.34}),conc=dbl('#b3b6ba'),dark=dbl('#2b2e33'),stone=dbl('#9a9288'),pave=dbl('#6f747a'),grass=dbl('#587f42'),water=waterHook(new THREE.MeshStandardMaterial({color:C('#12405a'),roughness:.07,metalness:.3,envMapIntensity:1.7,side:THREE.DoubleSide}));
   const a0=Z[0][0],a1=Z[Z.length-1][1];
   add(strip2(at(-3.6,.02),at(STB+3.6,.02),a0,a1,new THREE.MeshStandardMaterial({map:bedT,roughness:1,side:THREE.DoubleSide}),8,3));rails(sbP,a0,a1,0,s,1,10,.05);rails(sbP,a0,a1,STB,s,1,10,.05);
   const towers=(a,b,near,far,n,hmax)=>{for(let i=0;i<n;i++){const d=rnd2(a,b),o=side()*rnd2(near,far),w=rnd2(14,26),h=rnd2(16,hmax),p=sbP(d,o,0),f=bt[i%bt.length],m=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),[f,f,dark,dark,f,f]);m.position.set(p.x,h/2,p.z);m.rotation.y=sbYaw(d);s.add(m);}};
@@ -104,7 +104,7 @@ function buildSubway(li){
   if(L.tram)[mine,oth].forEach(c=>c.cars.forEach(car=>{const gm=M('#3a3f48',{roughness:.5,metalness:.8}),a=box(.1,.1,2.2,gm,0,4.9,-.3,car);a.rotation.x=-.8;const b2=box(.1,.1,2.2,gm,0,5.9,-.3,car);b2.rotation.x=.8;box(1.9,.09,.25,gm,0,6.6,.45,car);}));
   s.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
   const cab=sbCabIn(mine.cars[0]),seat=sbSeatIn(mine.cars[Math.min(1,L.cars-1)],lc,L.look||-1);
-  sub={scene:s,L,Z,mine,oth,hemi,sun,lamp,head,ht,sky,len:L.cars*22,od:sbStop(3),cab,seat};
+  sub={scene:s,dome:goldDome(s),L,Z,mine,oth,hemi,sun,lamp,head,ht,sky,len:L.cars*22,od:sbStop(3),cab,seat};
 }
 /* driver's cab: windscreen, desk, lever and a turtle-to-rabbit speed dial */
 function sbCabIn(car){const g=new THREE.Group(),E=(c,e)=>new THREE.MeshStandardMaterial({color:C(c),roughness:.75,emissive:C(c),emissiveIntensity:e||.25}),dk=E('#23262c'),md=E('#4d535e'),lt=E('#9aa0aa',.2),b=(w,h,d,m,x,y,z)=>box(w,h,d,m,x,y,z,g);
@@ -167,7 +167,7 @@ function updSubway(dt){
     if(cabv){sub.cab.userData.lev.rotation.x=.5-levS.v*1.0;if((A.fr=(A.fr||0)+1)%8===0)sbDial(A.v,L.tram?26:33);}}
   else{const zk=sbFlav(A.d),und=sbDark(A.d)>.02||sbDark(A.d-sub.len-14)>.02,want=und?sbP(A.d-sub.len-12,STB/2,5.2):zk==='c'?sbP(A.d-sub.len-16,STB/2,6):sbP(A.d-sub.len*.5-34,-13,7.5);if(cam.position.distanceTo(want)>300)cam.position.copy(want);else cam.position.lerp(want,1-Math.exp(-dt*4));cam.lookAt(sbP(A.d-sub.len*.3,und?0:1,2.6));}
 }
-function subLight(d,dt){const k=sbDark(d),hall=sbKind(d+10)==='hall'?1:0;sub.hemi.intensity=.8-.6*k+.25*hall*k;sub.sun.intensity=1.9*(1-k);sub.lamp.intensity=(1.1+1.2*hall)*k;sub.lamp.position.copy(sbP(d+8,STB/2,5.6));sub.head.intensity=3*k;sub.head.position.copy(sbP(d+1,0,2.6));sub.ht.position.copy(sbP(d+40,0,1));
+function subLight(d,dt){const k=sbDark(d),hall=sbKind(d+10)==='hall'?1:0;sub.hemi.intensity=GOLD.h*(1-.75*k)+.25*hall*k;sub.sun.intensity=GOLD.s*(1-k);sub.dome.visible=k<.97;WU.uT.value+=dt||0;sub.lamp.intensity=(1.1+1.2*hall)*k;sub.lamp.position.copy(sbP(d+8,STB/2,5.6));sub.head.intensity=3*k;sub.head.position.copy(sbP(d+1,0,2.6));sub.ht.position.copy(sbP(d+40,0,1));
   sub.scene.fog.near=300-240*k;sub.scene.fog.far=2200-1700*k;sub.scene.fog.color.setRGB(sub.sky.r*(1-k)+.015*k,sub.sky.g*(1-k)+.015*k,sub.sky.b*(1-k)+.02*k);sub.scene.background=sub.scene.fog.color;}
 
 /* drag to look around from the driver or passenger seat */

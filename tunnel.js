@@ -61,8 +61,8 @@ function tCar(col,kind){
 }
 
 function buildTunnel(){
-  const s=new THREE.Scene();s.background=C('#8fc7ee');s.environment=ENV;
-  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.85),sun=new THREE.DirectionalLight(0xfff0d6,2.1);sun.position.set(-.5,1,.35);s.add(hemi,sun);
+  const s=new THREE.Scene();s.background=C(HAZE);s.environment=ENV;
+  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.85),sun=new THREE.DirectionalLight(0xfff0d6,2.1);goldLights(hemi,sun);s.add(hemi,sun);const tdome=goldDome(s);s.fog=null;
   const lamp=new THREE.PointLight(0xfff1cf,0,70,1.6),head=new THREE.SpotLight(0xfff6dc,0,90,.5,.5,1.2),ht=new THREE.Object3D();s.add(lamp,head,ht);head.target=ht;
   const add=m=>{s.add(m);return m;},T=(t,o)=>new THREE.MeshStandardMaterial(Object.assign({map:t,roughness:.8,side:THREE.DoubleSide,envMapIntensity:.25},o||{}));
   /* --- textures (canvas x runs across the strip, canvas y along it) --- */
@@ -123,7 +123,7 @@ function buildTunnel(){
   [[-140,262,grassM],[1548,TEND+260,paveM]].forEach(r=>{nearTop.add(strip2(at(-320,d=>0),at(-TW,d=>0),r[0],r[1],r[2],20));far.add(strip2(at(TW,d=>0),at(320,d=>0),r[0],r[1],r[2],20));});
   [[262,CA],[CB,1548]].forEach(r=>{nearTop.add(strip2(at(-320,d=>0),at(-TW,d=>1.1),r[0],r[1],r[0]<800?grassM:paveM,10));far.add(strip2(at(TW,d=>1.1),at(320,d=>0),r[0],r[1],r[0]<800?grassM:paveM,10));});
   nearTop.add(strip2(topAt(-320),topAt(-TW-.6),CA,CB,M('#7a8f5a',{roughness:1,side:THREE.DoubleSide}),10));far.add(strip2(topAt(-TW-.6),topAt(320),CA,CB,M('#7a8f5a',{roughness:1,side:THREE.DoubleSide}),10));
-  const seaM=new THREE.MeshStandardMaterial({color:C('#2c7fb8'),roughness:.15,metalness:.3,transparent:true,opacity:.82,side:THREE.DoubleSide});
+  const seaM=waterHook(new THREE.MeshStandardMaterial({color:C('#17506e'),roughness:.07,metalness:.3,envMapIntensity:1.7,transparent:true,opacity:.84,side:THREE.DoubleSide}));
   const seaN=strip2(at(-320,d=>-.5),at(-TW-.6,d=>-.5),WA+8,WB-8,seaM,20),seaF=strip2(at(-TW-.6,d=>-.5),at(320,d=>-.5),WA+8,WB-8,seaM,20);nearTop.add(seaN);far.add(seaF);
   /* --- x-ray cut: what the ground looks like sliced open beside the tunnel --- */
   const cut=-TW-.6;
@@ -184,9 +184,9 @@ function updTunnel(dt){
   if(V.userData.beac){const f=(performance.now()/160|0)%2;V.userData.beac[0].visible=!!f;V.userData.beac[1].visible=!f;}
   V.userData.lens.forEach(m=>m.material.color.setHex(TU.lights?0xfff6c8:0x8a8f98));
   /* light: bright day outside, lamp-lit inside */
-  {const kk=TU.xray?0:k;L.hemi.intensity=.85-.6*kk;L.sun.intensity=2.1*(1-kk);}L.lamp.intensity=1.15*k;L.lamp.position.copy(uP(TU.d+4,0,TH-1.2));
+  {const kk=TU.xray?0:k;L.hemi.intensity=GOLD.h*(1-.7*kk);L.sun.intensity=GOLD.s*(1-kk);WU.uT.value+=dt;}L.lamp.intensity=1.15*k;L.lamp.position.copy(uP(TU.d+4,0,TH-1.2));
   L.head.intensity=TU.lights?(1.2+2.6*k):0;L.head.position.copy(uP(TU.d+V.userData.len/2,2.3,1.1));L.ht.position.copy(uP(TU.d+V.userData.len/2+30,2.3,.2));
-  tun.scene.background.set(0x8fc7ee);
+  tun.scene.background.copy(C(HAZE));
   /* traffic in the other lane */
   tun.traf.forEach(t=>{t.d+=t.v*dt;if(t.d>TEND+200)t.d=-120;if(t.d<TU.d-320)t.d=TU.d+420+Math.random()*200;const q=uP(t.d,-2.2,0);t.g.position.copy(q);t.g.rotation.set(0,0,0);t.g.rotation.y=tYaw(t.d);t.g.rotateX(-Math.atan2(tY(t.d+2)-tY(t.d-2),4));t.g.userData.wheels.forEach(w=>w.rotation.x=t.d/.36);t.g.userData.lens.forEach(m=>m.material.color.setHex(tIn(t.d)>.3?0xfff6c8:0x8a8f98));
     TU.colT-=dt/tun.traf.length;if(Math.abs(t.d-TU.d)<5&&TU.colT<=0&&TU.v>3&&!TU.need&&!TU.xray&&!TU.done){TU.colT=13;tBig('<i style="display:inline-block;width:58px;height:58px;border-radius:50%;border:5px solid #fff;background:'+TCOLS[t.ci][0]+'"></i>',TCOLS[t.ci][1]+' car',2600);say('A '+TCOLS[t.ci][1].toLowerCase()+' car.');}});

@@ -120,8 +120,8 @@ function eraseAt(x,z){let best=null,bd=64;model.scen.children.forEach(o=>{const 
   const i=model.feat.findIndex(f=>Math.hypot(f.x-x,f.z-z)<f.r*.7);if(i>=0){model.feat.splice(i,1);rebuildTerrain();return true;}return false;}
 /* ---------- scene ---------- */
 function buildModel(){
-  const s=new THREE.Scene();s.background=C('#d8cdbd');s.environment=ENV;const hemi2=new THREE.HemisphereLight(0xfff6e8,0x8a7358,.45);s.add(hemi2);
-  const l=new THREE.DirectionalLight(0xfff0d8,2.1);l.position.set(100,190,120);l.castShadow=true;l.shadow.mapSize.set(2048,2048);const sc=l.shadow.camera;sc.left=-125;sc.right=125;sc.top=125;sc.bottom=-125;sc.near=20;sc.far=560;l.shadow.bias=-.0004;l.shadow.normalBias=.14;s.add(l);
+  const s=new THREE.Scene();s.background=C('#e3cfb4');s.environment=ENV;const hemi2=new THREE.HemisphereLight(C(LOOK.fill),C(LOOK.bounce),.62);s.add(hemi2);
+  const l=new THREE.DirectionalLight(C(LOOK.sun),2.5);l.position.set(-170,120,105);l.shadow.radius=2.4;l.castShadow=true;l.shadow.mapSize.set(2048,2048);const sc=l.shadow.camera;sc.left=-125;sc.right=125;sc.top=125;sc.bottom=-125;sc.near=20;sc.far=560;l.shadow.bias=-.0004;l.shadow.normalBias=.14;s.add(l);
   const wood=cvs(512,512,(g,w,h)=>{g.fillStyle='#b98a55';g.fillRect(0,0,w,h);for(let i=0;i<260;i++){g.strokeStyle='rgba('+(i%2?'90,60,30':'225,185,130')+','+rnd(.08,.3)+')';g.lineWidth=rnd(.6,2.4);g.beginPath();const y=rnd(0,h);g.moveTo(0,y);g.bezierCurveTo(w*.3,y+rnd(-9,9),w*.7,y+rnd(-9,9),w,y+rnd(-4,4));g.stroke();}});wood.wrapS=wood.wrapT=THREE.RepeatWrapping;
   const wm=new THREE.MeshStandardMaterial({map:wood,roughness:.45}),flT=cvs(512,512,(g,w,h)=>{for(let r=0;r<8;r++){for(let c=0;c<2;c++){g.fillStyle=shade('#8a5f3c',rnd(.8,1.1));g.fillRect(c*256+(r%2?128:0)-128,r*64,256,64);g.fillRect(c*256+(r%2?128:0)+384,r*64,256,64);}g.fillStyle='rgba(30,18,8,.6)';g.fillRect(0,r*64,w,2);}});rep(flT,7,7);
   const fl=new THREE.Mesh(new THREE.PlaneGeometry(900,900),new THREE.MeshStandardMaterial({map:flT,roughness:.4}));fl.rotation.x=-Math.PI/2;fl.position.y=-52;s.add(fl);
@@ -142,7 +142,7 @@ function buildModel(){
   setPath(layoutPts(0),false);rebuildTerrain();setStyle(0);
   [[-70,-44,'pine'],[-62,-46,'tree'],[70,44,'tree'],[72,34,'pine'],[-70,42,'tree'],[-20,-8,'house'],[-8,-10,'house'],[-14,4,'church'],[0,49,'station'],[-30,10,'cow'],[-36,4,'cow'],[14,6,'barn'],[30,14,'horse'],[-52,-14,'windmill'],[8,-6,'pond'],[66,-2,'tree'],[-72,2,'pine'],[26,-2,'tower'],[-2,20,'people'],[52,-40,'pine'],[60,-36,'pine'],[24,-40,'pine']].forEach(a=>addScen(a[2],a[0],a[1]));
 }
-function setWild(on){MT.wild=on;$('mwild').classList.toggle('on',on);model.stars.visible=on;model.scene.background=C(on?'#0b0f2a':'#d8cdbd');model.wall.color.copy(C(on?'#141a3a':'#e6ddcf'));model.hemi.intensity=on?.22:.45;model.sun.intensity=on?.9:2.1;
+function setWild(on){MT.wild=on;$('mwild').classList.toggle('on',on);model.stars.visible=on;model.scene.background=C(on?'#0b0f2a':'#e3cfb4');model.wall.color.copy(C(on?'#141a3a':'#ecdcc4'));model.hemi.intensity=on?.22:.62;model.sun.intensity=on?.9:2.5;
   if(on){if(!model.feat.some(f=>f.t==='volcano'))model.feat.push({t:'volcano',x:20,z:0,r:24,h:20});setPath(wildPts(),true);}else setPath(layoutPts(MT.lay),false);rebuildTerrain();setStyle(MT.style);MT.d=0;MT.v=8;
   msg(on?'🤪 WILD MODE! Hold on tight!':'🚂 Back to the regular railroad',4000);if(on){say('Wild mode! Hold on tight!');snd.fanfare();}}
 function mray(e){const r=canvas.getBoundingClientRect(),v=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),rc=new THREE.Raycaster();rc.setFromCamera(v,cam);const h=rc.intersectObject(model.terr);if(h.length)return h[0].point;const p=new V3();return rc.ray.intersectPlane(model.plane,p)?p:null;}

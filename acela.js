@@ -22,10 +22,10 @@ const aZone=d=>{for(const z of AZ)if(d>=z[0]&&d<z[1])return z[2];return 'woods';
 const aDark=d=>{let k=0;AZ.forEach(z=>{if(z[2]==='tunnel')k=Math.max(k,clamp((d-z[0]+8)/40,0,1)*clamp((z[1]+8-d)/40,0,1));});return k;};
 
 function buildAcela(){
-  const s=new THREE.Scene(),sky=C('#9fcdf0');s.background=sky;s.fog=new THREE.Fog(sky,700,3600);s.environment=ENV;
-  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.8),sun=new THREE.DirectionalLight(0xfff0d6,1.9);sun.position.set(.6,1,.35);s.add(hemi,sun);const lamp=new THREE.PointLight(0xfff1cf,0,120,1.4);s.add(lamp);
+  const s=new THREE.Scene(),sky=C(HAZE);s.background=sky;s.fog=new THREE.Fog(sky,700,3900);s.environment=ENV;
+  const hemi=new THREE.HemisphereLight(0xd8e8ff,0x77705f,.8),sun=new THREE.DirectionalLight(0xfff0d6,1.9);goldLights(hemi,sun);s.add(hemi,sun);const lamp=new THREE.PointLight(0xfff1cf,0,120,1.4);s.add(lamp);
   const add=m=>{s.add(m);return m;},dbl=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:C(c),roughness:.95,side:THREE.DoubleSide},o||{})),at=(o,y)=>d=>aP(d,o,y);
-  const G={city:dbl('#6f747a'),town:dbl('#587f42'),woods:dbl('#4b7a3a'),shore:dbl('#587f42'),marsh:dbl('#77803f'),sand:dbl('#d9c48f'),water:new THREE.MeshStandardMaterial({color:C('#2f7fb5'),roughness:.18,metalness:.35,side:THREE.DoubleSide}),conc:dbl('#b3b6ba'),dark:dbl('#2b2e33'),stone:dbl('#9a9288')};
+  const G={city:dbl('#6f747a'),town:dbl('#587f42'),woods:dbl('#4b7a3a'),shore:dbl('#587f42'),marsh:dbl('#77803f'),sand:dbl('#d9c48f'),water:waterHook(new THREE.MeshStandardMaterial({color:C('#12405a'),roughness:.07,metalness:.3,envMapIntensity:1.7,side:THREE.DoubleSide})),conc:dbl('#b3b6ba'),dark:dbl('#2b2e33'),stone:dbl('#9a9288')};
   /* --- track bed, rails, wires --- */
   const bedT=rep(cvs(128,64,(c,w,h)=>{c.fillStyle='#6b665e';c.fillRect(0,0,w,h);for(let i=0;i<500;i++){const k=80+Math.random()*60;c.fillStyle='rgb('+k+','+(k-4)+','+(k-10)+')';c.fillRect(Math.random()*w,Math.random()*h,2,2);}c.fillStyle='#4a3f33';[[.2,.42],[.58,.8]].forEach(q=>{c.fillRect(w*q[0],h*.2,w*(q[1]-q[0]),h*.3);c.fillRect(w*q[0],h*.7,w*(q[1]-q[0]),h*.3);});}),1,1);
   add(strip2(at(-4.2,.02),at(ATB+4.2,.02),-300,AEND+120,new THREE.MeshStandardMaterial({map:bedT,roughness:1,side:THREE.DoubleSide}),10,3));
@@ -125,7 +125,7 @@ function buildAcela(){
   /* --- trains: yours, and others coming the other way --- */
   const mine=new Consist(['hsF','hsC','hsC','hsC','hsC','hsR'],1,s),oth=[new Consist(['eloco','amc','amc','amc','amc','amc'],1,s),new Consist(['loco','coach','coach','coach'],1,s),new Consist(['hsF','hsC','hsC','hsC','hsC','hsR'],1,s)];
   s.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
-  ace={scene:s,mine,oth,hemi,sun,lamp,boats,sky};AC_.ai=oth.map((c,i)=>({c,d:1200+i*1900,v:[40,26,66][i]}));
+  ace={scene:s,mine,oth,hemi,sun,lamp,boats,sky,dome:goldDome(s)};AC_.ai=oth.map((c,i)=>({c,d:1200+i*1900,v:[40,26,66][i]}));
 }
 
 const levA=Lever($('levA'));
@@ -149,7 +149,7 @@ function updAcela(dt){
     if(!a.h&&a.d-A.d<300&&a.d>A.d&&aDark(A.d)<.5){a.h=1;[311,370,466].forEach(f=>tone(f,.9,'sawtooth',.04));}if(a.d-A.d>900)a.h=0;});
   ace.boats.forEach((b,i)=>{b.position.x+=Math.sin(i*2.1)*dt*1.2;b.rotation.z=Math.sin(performance.now()/800+i)*.05;});
   /* light and sky */
-  const k=aDark(A.d);ace.hemi.intensity=.8-.62*k;ace.sun.intensity=1.9*(1-k);ace.lamp.intensity=1.6*k;ace.lamp.position.copy(aP(A.d-30,ATB/2,6));ace.scene.fog.near=700-560*k;ace.scene.fog.far=3600-2600*k;ace.scene.fog.color.setRGB(ace.sky.r*(1-k)+.02*k,ace.sky.g*(1-k)+.02*k,ace.sky.b*(1-k)+.03*k);ace.scene.background=ace.scene.fog.color;
+  const k=aDark(A.d);ace.hemi.intensity=GOLD.h*(1-.78*k);ace.sun.intensity=GOLD.s*(1-k);ace.dome.visible=k<.97;WU.uT.value+=dt;ace.lamp.intensity=1.6*k;ace.lamp.position.copy(aP(A.d-30,ATB/2,6));ace.scene.fog.near=700-560*k;ace.scene.fog.far=3600-2600*k;ace.scene.fog.color.setRGB(ace.sky.r*(1-k)+.02*k,ace.sky.g*(1-k)+.02*k,ace.sky.b*(1-k)+.03*k);ace.scene.background=ace.scene.fog.color;
   /* things to see */
   if(!A.done)AMARK.forEach((m,i)=>{if(A.d>=m[0]&&!A.said[i]){A.said[i]=1;if(A.dwell<=0){aBig(m[1],m[2],3600);say(m[3]);}}});
   {const N=AST[A.next];if(N&&!A.done&&A.dwell<=0&&N.d-A.d<620&&N.d-A.d>60&&!A.said['s'+A.next]){A.said['s'+A.next]=1;aBig('🚉','Coming up: '+N.n,3600);say('Coming up, '+N.n+'.');}}
