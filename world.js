@@ -3,20 +3,29 @@
    BOSTON WORLD
    ===================================================================== */
 const world=new THREE.Scene();
-const HAZE='#c9dceb';world.fog=new THREE.Fog(C(HAZE),420,8200);
-const skyTex=cvs(8,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#1f5fb4');gr.addColorStop(.25,'#3f86d4');gr.addColorStop(.42,'#8dbfe8');gr.addColorStop(.495,HAZE);gr.addColorStop(1,HAZE);g.fillStyle=gr;g.fillRect(0,0,w,h);});
-const sky=new THREE.Mesh(new THREE.SphereGeometry(12000,24,16),new THREE.MeshBasicMaterial({side:THREE.BackSide,fog:false,map:skyTex,depthWrite:false}));world.add(sky);
-const SD=new V3(-.5,.62,.48).normalize();
-const sunSpr=new THREE.Sprite(new THREE.SpriteMaterial({map:cvs(128,128,g=>{const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,'rgba(255,255,245,1)');r.addColorStop(.12,'rgba(255,250,225,.95)');r.addColorStop(.3,'rgba(255,240,200,.3)');r.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=r;g.fillRect(0,0,128,128);}),fog:false,depthWrite:false,transparent:true,toneMapped:false}));sunSpr.scale.set(2600,2600,1);world.add(sunSpr);
-const ENV=(()=>{const s=new THREE.Scene(),t=cvs(8,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#2f6fc0');gr.addColorStop(.4,'#9cc8ec');gr.addColorStop(.5,'#dbe8f2');gr.addColorStop(.53,'#8a9a7a');gr.addColorStop(1,'#4f5d44');g.fillStyle=gr;g.fillRect(0,0,w,h);});
-  s.add(new THREE.Mesh(new THREE.SphereGeometry(50,24,16),new THREE.MeshBasicMaterial({side:THREE.BackSide,map:t})));sph(5,new THREE.MeshBasicMaterial({color:0xffffff}),SD.x*45,SD.y*45,SD.z*45,s);
+/* ---------- PASS 1: golden-hour light, sky, image-based light, fog ----------
+   Late-afternoon sun low in the west-south-west, warm key light, cool sky fill,
+   exponential haze so the far skyline falls back, one shared sky model for the
+   visible dome and for reflections. */
+const SD=new V3(-.80,.34,.50).normalize();                  // direction TO the sun
+const LOOK={sun:'#ffc58a',sunI:3.1,skyTop:'#2c5fae',skyMid:'#7fb0df',hor:'#f3d3aa',glow:'#ffb56b',haze:'#e9cfb0',fill:'#b9cdf0',bounce:'#a8845c',hemiI:.95,fog:.000185,exp:1.08};
+const HAZE=LOOK.haze,HEMI_I=LOOK.hemiI;
+world.fog=new THREE.FogExp2(C(HAZE),LOOK.fog);renderer.toneMappingExposure=LOOK.exp;
+const SKY_GLSL=`vec3 skyCol(vec3 d,vec3 sd,vec3 top,vec3 mid,vec3 hor,vec3 glow){float h=max(d.y,0.);vec3 c=mix(hor,mid,smoothstep(0.,.22,h));c=mix(c,top,smoothstep(.16,.8,h));float s=max(dot(d,sd),0.);float az=max(dot(normalize(vec3(d.x,0.,d.z)+1e-5),normalize(vec3(sd.x,0.,sd.z))),0.);c+=glow*(pow(s,6.)*.34+pow(s,60.)*.6)+glow*pow(az,3.)*(1.-smoothstep(0.,.3,h))*.3;if(d.y<0.)c=mix(c,hor*.93,smoothstep(0.,-.05,d.y));return c;}`;
+const skyU={sd:{value:SD},top:{value:C(LOOK.skyTop)},mid:{value:C(LOOK.skyMid)},hor:{value:C(LOOK.hor)},glow:{value:C(LOOK.glow)}};
+const skyMat=k=>new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:skyU,vertexShader:'varying vec3 vd;void main(){vd=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'uniform vec3 sd,top,mid,hor,glow;varying vec3 vd;'+SKY_GLSL+'void main(){vec3 c=skyCol(normalize(vd),sd,top,mid,hor,glow)'+(k||'')+';gl_FragColor=vec4(c,1.);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'});
+const sky=new THREE.Mesh(new THREE.SphereGeometry(12000,32,20),skyMat());world.add(sky);
+const sunSpr=new THREE.Sprite(new THREE.SpriteMaterial({map:cvs(128,128,g=>{const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,'rgba(255,250,232,1)');r.addColorStop(.08,'rgba(255,236,190,.95)');r.addColorStop(.25,'rgba(255,200,130,.32)');r.addColorStop(.6,'rgba(255,180,110,.08)');r.addColorStop(1,'rgba(255,180,110,0)');g.fillStyle=r;g.fillRect(0,0,128,128);}),fog:false,depthWrite:false,transparent:true,toneMapped:false,blending:THREE.AdditiveBlending}));sunSpr.scale.set(4200,4200,1);world.add(sunSpr);
+/* reflections and ambient come from the same sky, plus a warm ground so shadowed brick is not grey */
+const ENV=(()=>{const s=new THREE.Scene();s.add(new THREE.Mesh(new THREE.SphereGeometry(50,32,20),skyMat('*1.15;if(vd.y<0.)c=mix(c,vec3(.30,.24,.17),smoothstep(0.,-.12,vd.y))')));sph(3.2,new THREE.MeshBasicMaterial({color:C('#ffd9a0')}),SD.x*45,SD.y*45,SD.z*45,s);
   const p=new THREE.PMREMGenerator(renderer),e=p.fromScene(s,.03).texture;p.dispose();return e;})();
 world.environment=ENV;
-const hemi=new THREE.HemisphereLight(0xcfe2ff,0x6f7d58,.4);world.add(hemi);
-const sun=new THREE.DirectionalLight(0xfff0d6,2.3);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=100;sun.shadow.camera.far=2800;sun.shadow.bias=-.0005;sun.shadow.normalBias=.5;world.add(sun,sun.target);
+const hemi=new THREE.HemisphereLight(C(LOOK.fill),C(LOOK.bounce),HEMI_I);world.add(hemi);
+const sun=new THREE.DirectionalLight(C(LOOK.sun),LOOK.sunI);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=100;sun.shadow.camera.far=3400;sun.shadow.bias=-.0006;sun.shadow.normalBias=.7;sun.shadow.radius=2.2;world.add(sun,sun.target);
 const SR=new V3().crossVectors(new V3(0,1,0),SD).normalize(),SU=new V3().crossVectors(SD,SR).normalize(),_sf=new V3();
 function sunFollow(x,y,z,R){const tx=2*R/2048;_sf.set(x,y,z);const a=Math.round(_sf.dot(SR)/tx)*tx,b=Math.round(_sf.dot(SU)/tx)*tx,c=_sf.dot(SD);_sf.set(0,0,0).addScaledVector(SR,a).addScaledVector(SU,b).addScaledVector(SD,c);
-  sun.position.copy(_sf).addScaledVector(SD,1300);sun.target.position.copy(_sf);sun.target.updateMatrixWorld();const s=sun.shadow.camera;if(s.right!==R){s.left=-R;s.right=R;s.top=R;s.bottom=-R;s.updateProjectionMatrix();}}
+  sun.position.copy(_sf).addScaledVector(SD,1700);sun.target.position.copy(_sf);sun.target.updateMatrixWorld();const s=sun.shadow.camera;if(s.right!==R){s.left=-R;s.right=R;s.top=R;s.bottom=-R;s.updateProjectionMatrix();}}
 
 /* ---------- trees: crossed leafy cards with a canopy disc ---------- */
 function treeTex(k){return cvs(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);
@@ -386,7 +395,7 @@ function buildNature(){
       world.add(inst(rG,roofI,L,1,(s,i,m,dm,col)=>{dm.scale.set(1,s[3]>2?.12:1,1);dm.position.set(s[0],6*s[3],s[1]);dm.rotation.set(0,s.r,0);dm.updateMatrix();m.setMatrixAt(i,dm.matrix);m.setColorAt(i,col.set(['#3a3d44','#4a3a30','#2f3238','#5a3a32'][i%4]).convertSRGBToLinear());}));
     }else addTrees(L);});
   /* clouds */
-  const cT=cvs(256,128,g=>{for(let i=0;i<22;i++){const x=rnd(50,206),y=rnd(52,84),r=rnd(22,46),gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,255,255,.75)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,256,128);}});
+  const cT=cvs(256,128,g=>{for(let i=0;i<22;i++){const x=rnd(50,206),y=rnd(52,84),r=rnd(22,46),gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,241,222,.75)');gr.addColorStop(1,'rgba(255,214,176,0)');g.fillStyle=gr;g.fillRect(0,0,256,128);}});
   for(let i=0;i<70;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:cT,transparent:true,depthWrite:false,fog:false,opacity:rnd(.6,.95)}));const k=rnd(900,2200);s.scale.set(k,k*.5,1);s.position.set(rnd(-9000,9000),rnd(1100,2000),rnd(-8000,17000));world.add(s);}
 }
 function buildLogan(){

@@ -47,7 +47,7 @@ function buildRoute(dest,heli){
   return W;
 }
 function setFlyView(v){F.view=v;F.lyaw=0;F.lpitch=0;cam.near=v==='cockpit'?.12:1;cam.updateProjectionMatrix();Object.values(craft).forEach(c=>{c.userData.ck.visible=v==='cockpit'&&c===PL;});}
-function flyShow(on){beacon.visible=blabel.visible=on&&F.phase!=='pick';Object.values(craft).forEach(c=>c.visible=on&&c===PL);if(!on){RINGS.forEach(r=>r.g.visible=false);world.fog.far=8200;}else world.fog.far=11500;}
+function flyShow(on){beacon.visible=blabel.visible=on&&F.phase!=='pick';Object.values(craft).forEach(c=>c.visible=on&&c===PL);if(!on){RINGS.forEach(r=>r.g.visible=false);world.fog.density=LOOK.fog;}else world.fog.density=LOOK.fog*.72;}
 function openPicker(){F.phase='pick';beacon.visible=blabel.visible=false;$('pick').classList.remove('hide');$('hFly').classList.add('hide');$('again').classList.add('hide');RINGS.forEach(r=>r.g.visible=false);Object.values(craft).forEach(c=>c.visible=false);setFlyView('chase');$('msg').style.opacity=0;}
 function startFlight(){
   const S=ACS[F.type],heli=!!S.heli;

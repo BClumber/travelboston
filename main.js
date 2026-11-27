@@ -7,7 +7,7 @@ function setMode(m){mode=m;LBL.forEach(sp=>sp.visible=m==='fly'||(m==='train'&&!
   $('hTrain').classList.toggle('hide',m!=='train');$('hFly').classList.toggle('hide',m!=='fly');$('hModel').classList.toggle('hide',m!=='model');$('hTun').classList.toggle('hide',m!=='tunnel');$('hAc').classList.toggle('hide',m!=='acela');$('hSub').classList.toggle('hide',m!=='subway');$('again').classList.add('hide');
   flyShow(m==='fly');$('pick').classList.add('hide');
   cam.near=(m==='model'||m==='tunnel'||m==='subway')?.3:1;cam.updateProjectionMatrix();
-  setView('cab');if(m!=='train'){hemi.intensity=.4;CAR.all.forEach(q=>q.envMapIntensity=1);}
+  setView('cab');if(m!=='train'){hemi.intensity=HEMI_I;CAR.all.forEach(q=>q.envMapIntensity=1);}
   if(m==='train'){resetTrain();msg('Push the lever up to go! 🚆',6000);say('Welcome aboard! Push the lever up to go.');}
   if(m==='fly')openPicker();
   if(m==='model'){if(!model)buildModel();MT.ride=false;msg('Tap ✏️ and draw your own track!',6000);}

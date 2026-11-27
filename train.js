@@ -68,7 +68,7 @@ function updTrain(dt){
   let ring=false;const tm=performance.now()/350|0;XING.forEach(c=>{const act=!TR.prov&&TR.d>c.d-320&&TR.d<c.d+130;c.arms.forEach(a=>{const tg=act?0:a[1]*1.35;a[0].rotation.x+=(tg-a[0].rotation.x)*Math.min(1,dt*2.5);});c.lights.forEach((l,i)=>l.color.set(act&&((i+tm)%2)?'#ff2a2a':'#400'));if(act&&Math.abs(TR.d-c.d)<260)ring=true;});
   TR.bellT-=dt;if(ring&&TR.bellT<=0){snd.bell();TR.bellT=.55;}
   /* tunnel light level */
-  const cv=tcover(TR.d-(TR.view==='seat'?32:0)),tgt=cv===2?(TR.d<HE?.55:1):0;TR.tf+=(tgt-TR.tf)*Math.min(1,dt*2.5);hemi.intensity=.4-.2*TR.tf;CAR.all.forEach(m=>m.envMapIntensity=1-.85*TR.tf);
+  const cv=tcover(TR.d-(TR.view==='seat'?32:0)),tgt=cv===2?(TR.d<HE?.55:1):0;TR.tf+=(tgt-TR.tf)*Math.min(1,dt*2.5);hemi.intensity=HEMI_I*(1-.5*TR.tf);CAR.all.forEach(m=>m.envMapIntensity=1-.85*TR.tf);
   {const p=tP(TR.d-.5,0,3.2),q=tP(TR.d+60,0,.5);head.position.copy(p);head.target.position.copy(q);head.target.updateMatrixWorld();}
   /* camera */
   const sway=Math.sin(performance.now()*.0031)*.004*TR.v/32+Math.sin(performance.now()*.0113)*.002*TR.v/32;
@@ -82,7 +82,7 @@ function updTrain(dt){
   engine((.04+Math.min(1,TR.v/32)*.3)*(1+TR.tf*.7),160+TR.v*22+TR.tf*120,.05+levT.v*.07,34+TR.v*2.2);
 }
 const QYs=new THREE.Quaternion().setFromAxisAngle(new V3(0,1,0),Math.PI),_q=new THREE.Quaternion(),_e=new THREE.Euler();
-function trainIdle(dt){trainTraffic(dt);playerTrain.place(rpos,137,1,.62);hemi.intensity=.4;CAR.all.forEach(m=>m.envMapIntensity=1);}
+function trainIdle(dt){trainTraffic(dt);playerTrain.place(rpos,137,1,.62);hemi.intensity=HEMI_I;CAR.all.forEach(m=>m.envMapIntensity=1);}
 /* drag to look around from the passenger seat */
 (function(){let id=null,lx=0,ly=0;canvas.addEventListener('pointerdown',e=>{if(mode!=='train'||(TR.view!=='seat'&&TR.view!=='cab'))return;id=e.pointerId;lx=e.clientX;ly=e.clientY;});
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==id||mode!=='train')return;if(TR.view==='cab'){TR.cyaw=clamp(TR.cyaw+(e.clientX-lx)*.006,-1.9,1.9);TR.cpitch=clamp(TR.cpitch+(e.clientY-ly)*.004,-.5,.4);}else{TR.yaw=clamp(TR.yaw+(e.clientX-lx)*.006,-2.6,2.6);TR.pitch=clamp(TR.pitch+(e.clientY-ly)*.004,-.6,.5);}lx=e.clientX;ly=e.clientY;});
