@@ -7,12 +7,12 @@
 let ace=null;
 const AC_={d:60,v:0,view:'out',next:1,dwell:0,done:false,said:{},fid:0,look:0,ai:[]};
 const AEND=15900,ATB=5.5;
-const AST=[{n:'Boston',d:60,say:'South Station, Boston.'},{n:'Providence',d:1650,say:'Providence, Rhode Island.'},{n:'New Haven',d:4150,say:'New Haven, Connecticut.'},{n:'New York',d:6600,say:'New York City. Penn Station.',hall:1},
+const AST=[{n:'Boston South Station',d:60,say:'South Station, Boston.'},{n:'Route 128',d:800,say:'Route 128 station.'},{n:'Providence',d:1650,say:'Providence, Rhode Island.'},{n:'New Haven',d:4150,say:'New Haven, Connecticut.'},{n:'New York',d:6600,say:'New York City. Penn Station.',hall:1},
   {n:'Philadelphia',d:10800,say:'Philadelphia, Pennsylvania.'},{n:'Baltimore',d:13650,say:'Baltimore, Maryland.'},{n:'Washington, D.C.',d:AEND,say:'Washington, D.C. Union Station.'}];
 /* [from, to, kind]  kinds: city, town, woods, shore, bridge, tunnel, marsh */
 const AZ=[[-300,520,'city'],[520,1450,'woods'],[1450,1850,'city'],[1850,2600,'woods'],[2600,3380,'shore'],[3380,3520,'bridge'],[3520,3950,'shore'],[3950,4350,'city'],[4350,5380,'town'],[5380,5700,'bridge'],[5700,6300,'city'],
   [6300,7200,'tunnel'],[7200,8200,'marsh'],[8200,9380,'town'],[9380,9620,'bridge'],[9620,10450,'town'],[10450,11050,'city'],[11050,12000,'town'],[12000,12420,'bridge'],[12420,13300,'woods'],[13300,13480,'tunnel'],[13480,13820,'city'],[13820,14100,'tunnel'],[14100,15250,'woods'],[15250,16400,'city']];
-const AMARK=[[420,'🚄','Here we go!','All aboard the fast train to Washington!'],[900,'🌳','Trees','Look at all the trees going by.'],[2700,'🌊','The ocean','Look! The ocean. We are riding by the sea.'],[3020,'🗼','A lighthouse','A lighthouse. It shines a light for the boats.'],[3360,'🌉','A bridge','We are going over a bridge.'],
+const AMARK=[[420,'🚄','Here we go!','All aboard the fast train to Washington!'],[1020,'🌳','Trees','Look at all the trees going by.'],[2700,'🌊','The ocean','Look! The ocean. We are riding by the sea.'],[3020,'🗼','A lighthouse','A lighthouse. It shines a light for the boats.'],[3360,'🌉','A bridge','We are going over a bridge.'],
   [5360,'🌉','The big red bridge','Here comes the big red bridge.'],[5800,'🏙️','New York City','New York City. So many tall buildings!'],[6290,'🚇','Into the tunnel','Into the tunnel. It is dark.'],[7230,'☀️','Out of the tunnel','Out of the tunnel. Hello, sunshine.'],[7500,'🏭','Factories','Factories and big round tanks.'],
   [9350,'🌉','Over the river','A bridge over the river.'],[10500,'🏛️','Philadelphia','Philadelphia. See the tall clock tower?'],[12000,'🌉','A long, long bridge','This is a long, long bridge. The river is very wide.'],[13290,'🚇','A tunnel','Another tunnel.'],[15300,'🏛️','Washington, D.C.','Washington, D.C. The big white dome is the Capitol.'],[15560,'⬆️','The tall white tower','The tall white tower is the Washington Monument.']];
 const aX=d=>230*Math.sin(d/1900)+85*Math.sin(d/730+1);
@@ -67,6 +67,7 @@ function buildAcela(){
     if(k==='marsh'){for(let i=0;i<L*.06;i++)tree(rnd2(a,b),side()*rnd2(40,330));}
     if(k==='city'){const dc=a>15000,big=L>450&&!dc,n=Math.round(L*(big?.12:.09));for(let i=0;i<n;i++){const d=rnd2(a+10,b-10),o=side()*rnd2(big?34:40,dc?150:300);tower(d,o,rnd2(14,26),big?rnd2(24,130)*(Math.abs(o)<170?1:.6):rnd2(14,46),i);}for(let i=0;i<L*.05;i++)tree(rnd2(a,b),side()*rnd2(18,30));}
   });
+  {[trees,pines,trunks].forEach(L=>{for(let i=L.length-1;i>=0;i--){const t=L[i],c=aP(t.d,0,0),o=(t.p.x-c.x);if(t.d>640&&t.d<830&&Math.hypot(t.p.x-c.x,t.p.z-c.z)<80&&o<0)L.splice(i,1);}});}
   const leaf=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true}),leaf2=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true}),lc=['#3f7a3a','#4b8a3f','#35692f','#5a8f3a','#44803c'],pc=['#2f5f38','#27502f','#356a40'];
   trees.forEach(t=>t.c=lc[(Math.random()*lc.length)|0]);pines.forEach(t=>t.c=pc[(Math.random()*pc.length)|0]);
   chunks(new THREE.IcosahedronGeometry(3.3,1),leaf,trees,true);chunks(new THREE.ConeGeometry(2.6,9,7),leaf2,pines,true);chunks(new THREE.CylinderGeometry(.32,.42,3.6,5),M('#5b4630',{roughness:1}),trunks);
@@ -81,6 +82,9 @@ function buildAcela(){
     cyl(11*k,11.6*k,9*k,white,0,17.5*k,0,g,20);for(let i=0;i<16;i++){const a=i/16*6.283;cyl(.5*k,.5*k,8*k,white,Math.cos(a)*11.6*k,17.5*k,Math.sin(a)*11.6*k,g,6);}
     const dm=sph(10*k,white,0,22*k,0,g);dm.scale.y=1.25;cyl(2.4*k,2.8*k,5*k,white,0,35.5*k,0,g,10);sph(1.2*k,M('#c9a84a',{metalness:.8,roughness:.3}),0,39.2*k,0,g);};
   place(1700,-150,g=>{dome(g,.8,false);});tag('State House',1700,-150,52,.9);
+  /* Route 128: the big parking garage beside the platforms */
+  place(730,-46,g=>{const cm=M('#b9bcc0',{roughness:.9}),dk=M('#2b2e33');for(let i=0;i<5;i++){box(44,.7,120,cm,0,3.4+i*3.4,0,g);box(44.4,1.2,120.4,cm,0,4.2+i*3.4,0,g).scale.set(1,1,1);box(43,2.2,119,dk,0,2.2+i*3.4,0,g);}for(let z=-54;z<=54;z+=18)[-21,21].forEach(x=>box(1.2,18,1.2,cm,x,9,z,g));box(10,22,10,cm,-17,11,-62,g);
+    const cars=['#b3261f','#27578f','#e8e4da','#22252b','#2f7a4a','#c79a1c'];for(let i=0;i<22;i++)box(2,1.3,4.4,M(cars[i%6],{roughness:.4,metalness:.4}),-14+(i%4)*9,18.4,-50+((i/4)|0)*18,g);});
   /* lighthouse + sailboats on the shore */
   place(3040,-66,g=>{cyl(3,4,22,white,0,11,0,g,12);cyl(3.05,3.5,5,M('#c5221f'),0,9,0,g,12);cyl(3.8,3.8,.6,M('#22252b'),0,22.3,0,g,12);cyl(2.2,2.2,3.4,GL('#fff3b0'),0,24.3,0,g,10);cyl(0,2.8,2.6,M('#c5221f'),0,27.3,0,g,10);box(9,5,7,white,7,2.5,2,g);const r=new THREE.Mesh(gable(9,3,7.4),M('#6b3a30'));r.position.set(7,5,2);g.add(r);});tag('Lighthouse',3040,-66,38,.8);
   const boats=[];[2750,2900,3180,3300,3620,3760,3880].forEach((d,i)=>boats.push(place(d,-rnd2(110,420),g=>{box(2.6,1.4,9,white,0,.3,0,g);box(.14,11,.14,M('#8a6a3a'),0,6,.8,g);const m=new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([new V3(0,1.6,.6),new V3(0,11,.6),new V3(0,1.6,-4)]),new THREE.MeshBasicMaterial({color:i%2?0xffe9c0:0xffffff,side:THREE.DoubleSide}));g.add(m);g.position.y=-1.3;g.userData.dyn=true;})));
@@ -111,7 +115,7 @@ function buildAcela(){
   AST.forEach(st=>{const a=st.d-150,b=st.d+14,roof=M('#3f4650',{roughness:.6,metalness:.4}),nt=nameT(st.n);
     [[-2.3,-9.5],[ATB+2.3,ATB+9.5]].forEach(q=>{add(strip2(at(q[0],1.15),at(q[1],1.15),a,b,G.conc,10));add(strip2(at(q[0],0),at(q[0],1.15),a,b,G.conc,10));add(strip2(at(q[0],1.17),at(q[0]+(q[0]<0?-.5:.5),1.17),a,b,dbl('#f2c21b'),10));
       if(!st.hall){add(strip2(at(q[0]+(q[0]<0?-1:1),5.6),at(q[1],5.2),a+20,b-10,roof,10));for(let d=a+24;d<b-10;d+=14){const p=aP(d,(q[0]+q[1])/2-.1,3.3);cyl(.16,.16,4.3,M('#2f3440'),p.x,p.y,p.z,s,6);}}
-      for(let d=a+40;d<b;d+=46){const p=aP(d,q[1]-(q[1]<0?-.6:.6),3.6),m=new THREE.Mesh(new THREE.PlaneGeometry(7,1.3),new THREE.MeshBasicMaterial({map:nt,side:THREE.DoubleSide}));m.position.copy(p);m.rotation.y=aYaw(d)+Math.PI/2;s.add(m);}
+      for(let d=a+40;d<b;d+=46){const p=aP(d,q[1]-(q[1]<0?-.6:.6),3.6),m=new THREE.Mesh(new THREE.PlaneGeometry(7,1.3),new THREE.MeshBasicMaterial({map:nt}));m.position.copy(p);m.rotation.y=aYaw(d)+(q[1]<0?-1:1)*Math.PI/2;s.add(m);}
       for(let i=0;i<10;i++)ppl.push({d:st.d,p:aP(rnd2(a+12,b-6),rnd2(Math.min(q[0],q[1])+1.6,Math.max(q[0],q[1])-1),1.15)});});
     if(st.d>=AEND)place(AEND+22,ATB/2,g=>{[-ATB/2,ATB/2].forEach(x=>{box(2.4,1.6,1.2,M('#c5221f'),x,1.1,0,g);box(.3,1.4,.3,GL('#ff3b30'),x,2.4,0,g);});});});
   { const shirts=['#b5452b','#27578f','#2f7a4a','#c79a1c','#6d3a86','#e8e4da','#1f6f8a','#d4692a'],b=[],h=[],l=[];ppl.forEach(q=>{const k=rnd2(.85,1.1);b.push({d:q.d,p:q.p.clone().setY(q.p.y+1.55*k),s:k,c:shirts[(Math.random()*8)|0]});h.push({d:q.d,p:q.p.clone().setY(q.p.y+2.3*k),s:k,c:['#f0cfae','#c99772','#8d5e3f','#e8bf9a'][(Math.random()*4)|0]});l.push({d:q.d,p:q.p.clone().setY(q.p.y+.55*k),s:k,c:['#2b3040','#3a3a3a','#4a5a78'][(Math.random()*3)|0]});});
