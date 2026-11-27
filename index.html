@@ -103,8 +103,31 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 #spick h2{margin:0;color:#fff;font-size:clamp(28px,6vw,44px)}#spick div{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:560px}
 #spick button{width:clamp(110px,22vw,150px);height:clamp(110px,22vw,150px);border-radius:50%;border:8px solid #fff;color:#fff;font:inherit;font-weight:800;font-size:clamp(22px,4.4vw,30px);box-shadow:0 8px 0 #0005}
 #spick button{font-size:clamp(18px,3.6vw,26px)}@media (orientation:landscape) and (max-height:430px){#spick button{width:108px;height:108px;font-size:21px}}
+/* pass 3: film look and frosted-glass HUD */
+#film{position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 46%,transparent 55%,rgba(20,10,4,.3) 100%)}
+#grain{position:fixed;left:-25%;top:-25%;width:150%;height:150%;pointer-events:none;z-index:1;opacity:.055;mix-blend-mode:overlay;animation:grn .6s steps(5) infinite}
+@keyframes grn{0%{transform:translate(0,0)}20%{transform:translate(-6%,4%)}40%{transform:translate(5%,-7%)}60%{transform:translate(-3%,-4%)}80%{transform:translate(7%,6%)}100%{transform:translate(0,0)}}
+#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:9}
+#tbig,#tbig2,#tbig3{background:rgba(255,255,255,.68);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.65);box-shadow:0 10px 30px rgba(0,0,0,.26)}
+#msg{background:rgba(24,30,58,.56);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid rgba(255,255,255,.2)}
+#stars,#snext,#anext,#adash{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4)}
+.card{background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+@media (orientation:landscape){#tbig3{top:auto;bottom:14px;max-width:calc(100% - 310px)}#tbig3 b{white-space:normal}}
+/* play timer */
+#tset{position:fixed;top:10px;right:10px;z-index:8;height:44px;padding:0 16px;border-radius:22px;border:0;background:rgba(255,255,255,.9);font:inherit;font-weight:800;font-size:16px;color:#1d2440;box-shadow:0 4px 0 #0003}
+#tmr{position:fixed;top:17px;left:146px;z-index:5;height:44px;padding:0 14px;border-radius:22px;background:rgba(255,255,255,.9);font-weight:800;font-size:20px;display:flex;align-items:center;gap:4px;box-shadow:0 4px 0 #0003;pointer-events:none}
+#tmr.low{background:#ffd23f;animation:pulse 1s infinite}
+#tbar{position:fixed;left:0;right:0;top:0;height:7px;z-index:8;background:#0003;pointer-events:none}#tbar i{display:block;height:100%;width:100%;background:#35c46a;border-radius:0 4px 4px 0;transition:width 1s linear,background 1s}
+#tdone{position:fixed;inset:0;z-index:12;background:linear-gradient(#1b2452,#3a2a6a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff;text-align:center;padding:16px}
+#tdone span{font-size:clamp(60px,18vh,120px);line-height:1}#tdone h2{margin:0;font-size:clamp(36px,9vw,64px)}#tdone p{margin:0 0 18px;font-size:clamp(22px,5vw,34px);font-weight:800}
+#tmore{position:relative;overflow:hidden;border:2px solid #fff6;background:#ffffff18;color:#fffc;font:inherit;font-weight:700;font-size:15px;padding:10px 18px;border-radius:20px;touch-action:none;user-select:none;-webkit-user-select:none}
+#tmore i{position:absolute;left:0;top:0;bottom:0;width:0;background:#ffffff40}#tmore.h i{width:100%;transition:width 3s linear}
 </style></head><body>
 <canvas id="c"></canvas>
+<button id="tset" class="hide" aria-label="Play timer">⏱️ Off</button>
+<div id="tmr" class="hide">⏳ <b>5</b></div><div id="tbar" class="hide"><i></i></div>
+<div id="tdone" class="hide"><span>🌙</span><h2>All done!</h2><p>Bye bye, trains! 👋</p><button id="tmore"><i></i>Grown-ups: hold for more time</button></div>
+<div id="film"></div><div id="grain"></div><div id="fade"></div>
 
 <div id="menu">
   <h1>Travel Boston</h1>

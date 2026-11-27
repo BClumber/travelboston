@@ -20,11 +20,38 @@ function wildPts(){const P=[[-56,1.2,44],[-20,1.2,46],[20,1.2,44],[52,3,36],[68,
 function TH0(x,z){let y=0;for(const f of model.feat){const dx=x-f.x,dz=z-f.z,r2=(dx*dx+dz*dz)/(f.r*f.r);if(r2>=1)continue;const k=(1-r2)*(1-r2);
     if(f.t==='hill')y=Math.max(y,f.h*k);else{const n=fbm(((x/61)%1+1)%1,((z/61)%1+1)%1,8),rd=1-Math.abs(2*n-1);let h=f.h*k*(.62+.6*rd);if(f.t==='volcano'){const c=Math.sqrt(r2);if(c<.2)h=Math.min(h,f.h*(.52+c*1.6));}y=Math.max(y,h);}}return y;}
 function gridH(x,z){const W=MT.W,D=MT.D,fx=clamp(x+W/2,0,W-.001),fz=clamp(z+D/2,0,D-.001),ix=fx|0,iz=fz|0,a=fx-ix,b=fz-iz,H=model.hgt,n=W+1;return (H[iz*n+ix]*(1-a)+H[iz*n+ix+1]*a)*(1-b)+(H[(iz+1)*n+ix]*(1-a)+H[(iz+1)*n+ix+1]*a)*b;}
+/* ---------- real tunnels: a bored, stone-lined tube with arched stone portals ----------
+   The mountain is a height field, so the mouth is cut open in the terrain shader (MTB) and the
+   tube and portal are real geometry behind it. */
+const MTB={n:{value:0},p:{value:Array.from({length:40},()=>new V3())}},TNL={hw:1.38,wh:1.85};
+function tnlProf(hw,wh,n){const P=[[-hw,0],[-hw,wh]];for(let i=1;i<n;i++){const a=Math.PI-i/n*Math.PI;P.push([Math.cos(a)*hw,wh+Math.sin(a)*hw]);}P.push([hw,wh],[hw,0]);return P;}
+function tnlMats(){if(TNL.m)return TNL.m;const st=cvs(256,256,g=>{g.fillStyle='#6f6a62';g.fillRect(0,0,256,256);for(let r=0;r<8;r++)for(let c=-1;c<5;c++){g.fillStyle=shade('#8f897e',rnd(.7,1.18));rr(g,c*64+(r%2?32:0)+1.5,r*32+1.5,61,29,3);g.fill();}for(let i=0;i<700;i++){g.fillStyle='rgba(0,0,0,'+rnd(0,.14)+')';g.fillRect(rnd(0,256),rnd(0,256),3,2);}for(let i=0;i<10;i++){const x=rnd(0,256),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'rgba(20,24,18,.28)');gr.addColorStop(1,'rgba(20,24,18,0)');g.fillStyle=gr;g.fillRect(x,0,rnd(4,12),256);}}),
+    hc=mkCan(256,256,g=>{g.fillStyle='#4a4a4a';g.fillRect(0,0,256,256);for(let r=0;r<8;r++)for(let c=-1;c<5;c++){const k=150+Math.random()*50|0;g.fillStyle='rgb('+k+','+k+','+k+')';rr(g,c*64+(r%2?32:0)+2.5,r*32+2.5,59,27,4);g.fill();}}),nm=normalFrom(hc,2.4);st.wrapS=st.wrapT=THREE.RepeatWrapping;
+  const mk=(o)=>new THREE.MeshStandardMaterial(Object.assign({map:st,normalMap:nm,roughness:.95,metalness:0},o));
+  return TNL.m={wall:mk({}),ring:mk({color:C('#d9d2c2')}),line:mk({color:C('#8f8a80'),side:THREE.BackSide,envMapIntensity:.08}),soot:new THREE.MeshBasicMaterial({color:0x0b0a09,side:THREE.BackSide}),lamp:new THREE.MeshBasicMaterial({color:0xffd9a0})};}
+function modelTunnels(S){const N=S.length,m=tnlMats(),hw=TNL.hw,wh=TNL.wh,runs=[];let i0=-1;for(let i=0;i<N;i++)if(!S[i][2]){i0=i;break;}MTB.n.value=0;if(i0<0)return;
+  let st=null;for(let k=1;k<=N;k++){const f=S[(i0+k)%N][2],pf=S[(i0+k-1)%N][2];if(f&&!pf)st=(i0+k)*.7;if(!f&&pf&&st!==null){runs.push([st-.35,(i0+k)*.7-.35]);st=null;}}
+  const fr=d=>{const p=model.pos(d),t=model.tan(d);t.y=0;t.normalize();return {p,t,l:new V3(t.z,0,-t.x)};};let nb=0;
+  runs.forEach(R=>{if(R[1]-R[0]<3)return;const a=R[0],b=R[1],g=new THREE.Group();
+    /* lining: horseshoe tube with a floor, plus a soot-black inner tube deeper in so it fades to dark */
+    [[tnlProf(hw,wh,10),m.line,a-.3,b+.3,0],[tnlProf(hw*.985,wh,8),m.soot,a+7,b-7,1]].forEach(q=>{const P=q[0].concat([q[0][0]]),pos=[],uv=[],idx=[],n=P.length;if(q[3]-q[2]<1)return;const steps=Math.max(2,Math.ceil((q[3]-q[2])/1.1));
+      for(let s=0;s<=steps;s++){const d=q[2]+(q[3]-q[2])*s/steps,f=fr(d);P.forEach((v,j)=>{pos.push(f.p.x+f.l.x*v[0],.03+v[1],f.p.z+f.l.z*v[0]);uv.push(j/(n-1)*2.4,d/3.2);});}
+      for(let s=0;s<steps;s++)for(let j=0;j<n-1;j++){const A=s*n+j,B=A+n;idx.push(A,B,A+1,A+1,B,B+1);}
+      const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));bg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));bg.setIndex(idx);bg.computeVertexNormals();const me=new THREE.Mesh(bg,q[1]);me.material.side=THREE.DoubleSide;me.receiveShadow=!q[4];g.add(me);});
+    for(let d=a+2.5;d<b-1.5;d+=5){const f=fr(d);box(.16,.1,.3,m.lamp,f.p.x,wh+hw-.12,f.p.z,g);}
+    /* a portal at each end: headwall with the arch cut through it, raised arch ring, keystone, coping, wing walls */
+    [[a,1],[b,-1]].forEach(e=>{const f=fr(e[0]),pg=new THREE.Group(),W=3.5,H=4.7,sh=new THREE.Shape();sh.moveTo(-W,0);sh.lineTo(-W*.86,H);sh.lineTo(W*.86,H);sh.lineTo(W,0);sh.closePath();const ho=new THREE.Path(),pr=tnlProf(hw,wh,12);ho.moveTo(pr[0][0],pr[0][1]);pr.slice(1).forEach(v=>ho.lineTo(v[0],v[1]));ho.closePath();sh.holes.push(ho);
+      const uvs=g2=>{const u=g2.attributes.uv;for(let i=0;i<u.count;i++)u.setXY(i,u.getX(i)/3.2,u.getY(i)/3.2);return g2;},wall=new THREE.Mesh(uvs(new THREE.ExtrudeGeometry(sh,{depth:.7,bevelEnabled:false})),m.wall);wall.position.z=-.35;pg.add(wall);
+      const rs=new THREE.Shape(),po=tnlProf(hw+.42,wh,12);rs.moveTo(po[0][0],po[0][1]);po.slice(1).forEach(v=>rs.lineTo(v[0],v[1]));rs.closePath();const rh=new THREE.Path();rh.moveTo(pr[0][0],pr[0][1]);pr.slice(1).forEach(v=>rh.lineTo(v[0],v[1]));rh.closePath();rs.holes.push(rh);const ring=new THREE.Mesh(uvs(new THREE.ExtrudeGeometry(rs,{depth:.92,bevelEnabled:false})),m.ring);ring.position.z=-.46;pg.add(ring);
+      box(.62,.8,1.06,m.ring,0,wh+hw+.3,0,pg);box(W*1.78,.34,1.0,m.ring,0,H+.17,0,pg);[-1,1].forEach(k=>{const w=box(2.6,3.0,.5,m.wall,k*(W+1.05),1.5,-e[1]*.75,pg);w.rotation.y=k*e[1]*.5;box(2.7,.24,.62,m.ring,k*(W+1.05),3.1,-e[1]*.75,pg).rotation.y=k*e[1]*.5;});
+      pg.position.set(f.p.x,.02,f.p.z);pg.rotation.y=Math.atan2(f.t.x,f.t.z);g.add(shadowize(pg));
+      for(let k=0;k<4&&nb<40;k++){const q=fr(e[0]+e[1]*(-1.3+k*1.25));MTB.p.value[nb++].set(q.p.x,q.p.z,1);}});
+    model.portals.add(g);});MTB.n.value=nb;}
 function rebuildTerrain(){
   const W=MT.W,D=MT.D,n=W+1,g=model.terr.geometry,p=g.attributes.position,S=[],bk={},key=(x,z)=>((x/5)|0)+'_'+((z/5)|0);
-  while(model.portals.children.length)model.portals.remove(model.portals.children[0]);
+  while(model.portals.children.length){const o=model.portals.children[0];o.traverse(q=>{if(q.geometry)q.geometry.dispose();});model.portals.remove(o);}
   if(!MT.wild){let prev=null;for(let d=0;d<model.L;d+=.7){const q=model.pos(d),fl=TH0(q.x,q.z)>4.8?1:0,s=[q.x,q.z,fl];S.push(s);const k=key(q.x+200,q.z+200);(bk[k]=bk[k]||[]).push(s);
-      if(prev!==null&&prev!==fl){const t=model.tan(d),m=new THREE.Group(),st=M('#8d8a84',{roughness:.95});box(.7,3.6,.8,st,-1.7,1.8,0,m);box(.7,3.6,.8,st,1.7,1.8,0,m);box(4.3,.9,.8,st,0,3.9,0,m);box(2.7,3.3,.1,new THREE.MeshBasicMaterial({color:0x050505}),0,1.7,fl?.5:-.5,m);m.position.set(q.x,0,q.z);m.rotation.y=Math.atan2(t.x,t.z);model.portals.add(shadowize(m));}prev=fl;}}
+      prev=fl;}modelTunnels(S);}else MTB.n.value=0;
   const col=[],cg=C('#5e9a48'),ch=C('#4a7f3a'),cr=C('#807a70'),cs=C('#f4f6f8'),cl=C('#d8431c'),cd=C('#3a3431'),c=new THREE.Color();
   for(let iz=0;iz<=D;iz++)for(let ix=0;ix<=W;ix++){const x=ix-W/2,z=iz-D/2;let h=TH0(x,z);
       if(h>.01&&S.length){let dm=99,fl=0;const kx=((x+200)/5)|0,kz=((z+200)/5)|0;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const L=bk[(kx+a)+'_'+(kz+b)];if(L)for(const s of L){const q=(s[0]-x)**2+(s[1]-z)**2;if(q<dm){dm=q;fl=s[2];}}}
@@ -101,7 +128,8 @@ function buildModel(){
   const wall=new THREE.MeshStandardMaterial({color:C('#e6ddcf'),roughness:.95});[[0,-300,0],[-300,0,Math.PI/2],[300,0,-Math.PI/2],[0,300,Math.PI]].forEach(a=>{const w=new THREE.Mesh(new THREE.PlaneGeometry(900,420),wall);w.position.set(a[0],158,a[1]);w.rotation.y=a[2];s.add(w);});
   box(MT.W+10,4,MT.D+10,wm,0,-2.15,0,s);[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(a=>box(6,50,6,wm,a[0]*(MT.W/2-2),-28,a[1]*(MT.D/2-2),s));
   const gm=noiseTex(256,(u,v)=>{const k=.72+fbm(u,v,8)*.36+(N1(u*64,v*64)-.5)*.3;return [255*k,255*k,255*k];});rep(gm,7,5);
-  const tg=new THREE.PlaneGeometry(MT.W,MT.D,MT.W,MT.D);tg.rotateX(-Math.PI/2);const terr=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({map:gm,vertexColors:true,roughness:1,side:THREE.DoubleSide}));terr.receiveShadow=true;terr.castShadow=true;terr.position.y=.02;s.add(terr);
+  const tg=new THREE.PlaneGeometry(MT.W,MT.D,MT.W,MT.D);tg.rotateX(-Math.PI/2);const terrM=new THREE.MeshStandardMaterial({map:gm,vertexColors:true,roughness:1,side:THREE.DoubleSide});terrM.onBeforeCompile=sh=>{sh.uniforms.uBn=MTB.n;sh.uniforms.uB=MTB.p;sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvWp=(modelMatrix*vec4(position,1.)).xyz;');sh.fragmentShader='uniform float uBn;uniform vec3 uB[40];varying vec3 vWp;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(vWp.y>.1&&vWp.y<3.75){for(int i=0;i<40;i++){if(float(i)>=uBn)break;vec2 q=vWp.xz-uB[i].xy;if(dot(q,q)<2.6)discard;}}');};
+  const terr=new THREE.Mesh(tg,terrM);terr.receiveShadow=true;terr.castShadow=true;terr.position.y=.02;s.add(terr);
   const neonT=cvs(64,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);['#ff3b6b','#ffb21a','#f7f03a','#39e06a','#2aa8ff','#a05cff','#ff3b6b'].forEach((c,i)=>gr.addColorStop(i/6,c));g.fillStyle=gr;g.fillRect(0,0,w,h);g.fillStyle='rgba(0,0,0,.35)';for(let y=0;y<h;y+=16)g.fillRect(0,y,w,5);});neonT.wrapS=neonT.wrapT=THREE.RepeatWrapping;
   model={scene:s,terr,hgt:new Float32Array((MT.W+1)*(MT.D+1)),feat:[],anim:[],track:new THREE.Group(),scen:new THREE.Group(),portals:new THREE.Group(),consist:null,smoke:[],fx:[],dots:null,draw:[],hemi:hemi2,sun:l,wall,
     neon:new THREE.MeshBasicMaterial({map:neonT,side:THREE.DoubleSide}),glow:new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide}),stars:new THREE.Group()};
