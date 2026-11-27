@@ -94,11 +94,12 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 #shorn{left:14px;bottom:22px;background:#ffd23f}
 #sline{position:fixed;top:76px;left:10px;z-index:4;padding:6px 14px;border-radius:16px;color:#fff;font-weight:800;font-size:16px;box-shadow:0 3px 0 #0003}
 #snext{position:fixed;top:116px;left:10px;z-index:4;padding:5px 13px;border-radius:16px;background:#ffffffee;font-weight:800;font-size:16px;border:3px solid #da291c;max-width:60vw}
-#smap{position:fixed;top:22px;left:50%;transform:translateX(-50%);width:min(40vw,400px);height:30px;z-index:4;--c:#da291c}
-#smap .ln{position:absolute;left:0;right:0;top:11px;height:8px;border-radius:4px;background:var(--c);box-shadow:0 0 0 3px #fff}
-#smap .dot{position:absolute;top:5px;width:14px;height:14px;margin-left:-10px;border-radius:50%;background:#fff;border:3px solid var(--c)}#smap .dot.on{background:var(--c);border-color:#fff}
-#smap .me{position:absolute;top:-9px;margin-left:-17px;font-style:normal;font-size:26px;line-height:34px;width:34px;height:34px;text-align:center;background:#fff;border-radius:50%;box-shadow:0 2px 0 #0004;transition:left .3s linear}
-@media (orientation:portrait){#smap{top:166px;width:74vw}}
+#smap,#amap{position:fixed;top:22px;left:50%;transform:translateX(-50%);width:min(40vw,400px);height:30px;z-index:4;--c:#da291c}
+#smap .ln,#amap .ln{position:absolute;left:0;right:0;top:11px;height:8px;border-radius:4px;background:var(--c);box-shadow:0 0 0 3px #fff}
+#smap .dot,#amap .dot{position:absolute;top:5px;width:14px;height:14px;margin-left:-10px;border-radius:50%;background:#fff;border:3px solid var(--c)}#smap .dot.on,#amap .dot.on{background:var(--c);border-color:#fff}
+#smap .me,#amap .me{position:absolute;top:-9px;margin-left:-17px;font-style:normal;font-size:26px;line-height:34px;width:34px;height:34px;text-align:center;background:#fff;border-radius:50%;box-shadow:0 2px 0 #0004;transition:left .3s linear}
+@media (orientation:portrait){#smap,#amap{top:166px;width:74vw}}
+#amap{width:min(46vw,460px)}#amap .dot.sm{top:9px;width:6px;height:6px;margin-left:-5px;border-width:2px}
 #spick{position:fixed;inset:0;z-index:6;background:#0d1b44cc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #spick h2{margin:0;color:#fff;font-size:clamp(28px,6vw,44px)}#spick div{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:560px}
 #spick button{width:clamp(110px,22vw,150px);height:clamp(110px,22vw,150px);border-radius:50%;border:8px solid #fff;color:#fff;font:inherit;font-weight:800;font-size:clamp(22px,4.4vw,30px);box-shadow:0 8px 0 #0005}
@@ -210,6 +211,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
     <button class="big" id="ahorn" aria-label="Horn">📯</button>
     <div id="adash"><b id="aspd">0</b><span>MPH</span></div>
     <div id="anext" class="pill">Next: Providence</div>
+    <div id="amap"></div>
     <div id="tbig2" style="opacity:0"></div>
     <div class="lever" id="levA"><i class="a">🐇</i><i class="b">🛑</i><div class="knob">🚄</div></div>
   </div>

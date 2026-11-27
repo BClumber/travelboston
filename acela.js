@@ -10,6 +10,10 @@ const AEND=15900,ATB=5.5;
 const AST=[{n:'Boston South Station',d:60,say:'South Station, Boston.'},{n:'Route 128',d:800,say:'Route 128 station.'},{n:'Providence',d:1650,say:'Providence, Rhode Island.'},{n:'New Haven',d:4150,say:'New Haven, Connecticut.'},{n:'New York',d:6600,say:'New York City. Penn Station.',hall:1},
   {n:'Philadelphia',d:10800,say:'Philadelphia, Pennsylvania.'},{n:'Baltimore',d:13650,say:'Baltimore, Maryland.'},{n:'Washington, D.C.',d:AEND,say:'Washington, D.C. Union Station.'}];
 /* [from, to, kind]  kinds: city, town, woods, shore, bridge, tunnel, marsh */
+/* stations the express runs straight through, in real order along the line */
+const APASS=[['Back Bay',300],['Kingston',2150],['Westerly',2480],['Mystic',2830],['New London',3200],['Old Saybrook',3700],['Bridgeport',4650],['Stamford',5020],['New Rochelle',5260],['Newark',7700],['Metropark',8500],['Trenton',9150],['Wilmington',11500],['Aberdeen',12700],['BWI Airport',14450],['New Carrollton',15000]];
+/* speed limit in mph along the line: the long straight run from Route 128 to Providence is the fastest */
+const ALIM=[[800,100],[1650,160],[4150,110],[6600,100],[10800,135],[13650,125],[1e9,110]],aLim=d=>{for(const q of ALIM)if(d<q[0])return q[1];return 110;};
 const AZ=[[-300,520,'city'],[520,1450,'woods'],[1450,1850,'city'],[1850,2600,'woods'],[2600,3380,'shore'],[3380,3520,'bridge'],[3520,3950,'shore'],[3950,4350,'city'],[4350,5380,'town'],[5380,5700,'bridge'],[5700,6300,'city'],
   [6300,7200,'tunnel'],[7200,8200,'marsh'],[8200,9380,'town'],[9380,9620,'bridge'],[9620,10450,'town'],[10450,11050,'city'],[11050,12000,'town'],[12000,12420,'bridge'],[12420,13300,'woods'],[13300,13480,'tunnel'],[13480,13820,'city'],[13820,14100,'tunnel'],[14100,15250,'woods'],[15250,16400,'city']];
 const AMARK=[[420,'🚄','Here we go!','All aboard the fast train to Washington!'],[1020,'🌳','Trees','Look at all the trees going by.'],[2700,'🌊','The ocean','Look! The ocean. We are riding by the sea.'],[3020,'🗼','A lighthouse','A lighthouse. It shines a light for the boats.'],[3360,'🌉','A bridge','We are going over a bridge.'],
@@ -112,11 +116,11 @@ function buildAcela(){
   /* --- stations --- */
   const nameT=n=>cvs(512,96,(c,w,h)=>{c.fillStyle='#1b3f77';c.fillRect(0,0,w,h);c.fillStyle='#fff';c.fillRect(0,h-8,w,8);c.font='800 54px Arial';c.textAlign='center';c.textBaseline='middle';let f=54;while(c.measureText(n).width>w-30){f-=3;c.font='800 '+f+'px Arial';}c.fillText(n,w/2,h/2-2);});
   const ppl=[];
-  AST.forEach(st=>{const a=st.d-150,b=st.d+14,roof=M('#3f4650',{roughness:.6,metalness:.4}),nt=nameT(st.n);
+  AST.concat(APASS.map(q=>({n:q[0],d:q[1],pass:1}))).forEach(st=>{const a=st.d-(st.pass?95:150),b=st.d+(st.pass?35:14),roof=M('#3f4650',{roughness:.6,metalness:.4}),nt=nameT(st.n);
     [[-2.3,-9.5],[ATB+2.3,ATB+9.5]].forEach(q=>{add(strip2(at(q[0],1.15),at(q[1],1.15),a,b,G.conc,10));add(strip2(at(q[0],0),at(q[0],1.15),a,b,G.conc,10));add(strip2(at(q[0],1.17),at(q[0]+(q[0]<0?-.5:.5),1.17),a,b,dbl('#f2c21b'),10));
       if(!st.hall){add(strip2(at(q[0]+(q[0]<0?-1:1),5.6),at(q[1],5.2),a+20,b-10,roof,10));for(let d=a+24;d<b-10;d+=14){const p=aP(d,(q[0]+q[1])/2-.1,3.3);cyl(.16,.16,4.3,M('#2f3440'),p.x,p.y,p.z,s,6);}}
       for(let d=a+40;d<b;d+=46){const p=aP(d,q[1]-(q[1]<0?-.6:.6),3.6),m=new THREE.Mesh(new THREE.PlaneGeometry(7,1.3),new THREE.MeshBasicMaterial({map:nt}));m.position.copy(p);m.rotation.y=aYaw(d)+(q[1]<0?-1:1)*Math.PI/2;s.add(m);}
-      for(let i=0;i<10;i++)ppl.push({d:st.d,p:aP(rnd2(a+12,b-6),rnd2(Math.min(q[0],q[1])+1.6,Math.max(q[0],q[1])-1),1.15)});});
+      for(let i=0;i<(st.pass?5:10);i++)ppl.push({d:st.d,p:aP(rnd2(a+12,b-6),rnd2(Math.min(q[0],q[1])+1.6,Math.max(q[0],q[1])-1),1.15)});});
     if(st.d>=AEND)place(AEND+22,ATB/2,g=>{[-ATB/2,ATB/2].forEach(x=>{box(2.4,1.6,1.2,M('#c5221f'),x,1.1,0,g);box(.3,1.4,.3,GL('#ff3b30'),x,2.4,0,g);});});});
   { const shirts=['#b5452b','#27578f','#2f7a4a','#c79a1c','#6d3a86','#e8e4da','#1f6f8a','#d4692a'],b=[],h=[],l=[];ppl.forEach(q=>{const k=rnd2(.85,1.1);b.push({d:q.d,p:q.p.clone().setY(q.p.y+1.55*k),s:k,c:shirts[(Math.random()*8)|0]});h.push({d:q.d,p:q.p.clone().setY(q.p.y+2.3*k),s:k,c:['#f0cfae','#c99772','#8d5e3f','#e8bf9a'][(Math.random()*4)|0]});l.push({d:q.d,p:q.p.clone().setY(q.p.y+.55*k),s:k,c:['#2b3040','#3a3a3a','#4a5a78'][(Math.random()*3)|0]});});
     const pm=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.85});chunks(new THREE.CylinderGeometry(.3,.33,.95,7),pm(),b,true);chunks(new THREE.SphereGeometry(.24,7,5),pm(),h,true);chunks(new THREE.BoxGeometry(.5,1.1,.3),pm(),l,true);}
@@ -131,18 +135,23 @@ function buildAcela(){
 const levA=Lever($('levA'));
 $('ahorn').onclick=()=>{audioInit();[311,370,466].forEach(f=>tone(f,1.3,'sawtooth',.09));};
 function aBig(e,w,ms){const b=$('tbig2');b.innerHTML='<span>'+e+'</span><b>'+w+'</b>';b.style.opacity=1;clearTimeout(AC_.bt);AC_.bt=setTimeout(()=>{b.style.opacity=0;},ms||3400);}
-function aReset(){AC_.d=AST[0].d;AC_.v=0;AC_.next=1;AC_.dwell=0;AC_.done=false;AC_.said={};AC_.view='out';levA.set(0);$('anext').textContent='Next: '+AST[1].n;$('aspd').textContent='0';AC_.ai.forEach((a,i)=>a.d=1200+i*1900);cam.position.copy(aP(20,-20,10));}
+function aMap(){const m=$('amap'),f=d=>((d-AST[0].d)/(AEND-AST[0].d)*100);m.style.setProperty('--c','#0f7fa8');m.innerHTML='<i class="ln"></i>'+APASS.map(q=>'<i class="dot sm" data-d="'+q[1]+'" style="left:'+f(q[1])+'%"></i>').join('')+AST.map(s=>'<i class="dot" data-d="'+s.d+'" style="left:'+f(s.d)+'%"></i>').join('')+'<i class="me">🚄</i>';}
+function aReset(){aMap();AC_.d=AST[0].d;AC_.v=0;AC_.next=1;AC_.dwell=0;AC_.done=false;AC_.said={};AC_.view='out';levA.set(0);$('anext').textContent='Next: '+AST[1].n;$('aspd').textContent='0';AC_.ai.forEach((a,i)=>a.d=1200+i*1900);cam.position.copy(aP(20,-20,10));}
 const _av=new THREE.Vector3();
 function updAcela(dt){
   const A=AC_,S=AST[A.next];
   if(keys.ArrowUp||keys.w)levA.set(levA.v+dt*.7);if(keys.ArrowDown||keys.s)levA.set(levA.v-dt*.9);
-  let vt=A.done?0:levA.v*76;
-  if(S&&!A.done){const rem=S.d-A.d;if(A.dwell<=0)vt=Math.min(vt,Math.sqrt(Math.max(0,2*4.6*(rem-.3)))+.6);
+  let vt=A.done?0:levA.v*aLim(A.d)/2;
+  if(S&&!A.done){const rem=S.d-A.d;if(A.dwell<=0)vt=Math.min(vt,Math.sqrt(Math.max(0,2*(A.next===2?8:4.6)*(rem-.3)))+.6);
     if(rem<1.2&&A.dwell<=0&&A.v<1.2&&levA.v>.02||rem<=.3&&A.dwell<=0){A.v=0;A.d=Math.min(A.d,S.d);
       if(A.next===AST.length-1){A.done=true;levA.set(0);addStar(3);aBig('🎉','Yay! Washington, D.C.!',7400);say('Yay! We made it to Washington, D.C. Great driving!');snd.fanfare();confetti();const id=++A.fid;setTimeout(()=>{if(mode==='acela'&&A.done)confetti();},1800);setTimeout(()=>{if(mode==='acela'&&A.done&&A.fid===id)setMode('menu');},7500);}
       else{A.dwell=6.5;addStar(1);snd.chime();aBig('🚉',S.n,5200);say(S.say+' Doors open.');}}}
   if(A.dwell>0){A.dwell-=dt;vt=0;if(A.dwell<=0){A.next++;$('anext').textContent='Next: '+AST[A.next].n;say('Doors closing. Next stop, '+AST[A.next].n+'.');aBig('🚪','Next stop: '+AST[A.next].n,3600);}}
-  A.v+=clamp(vt-A.v,-9*dt,(A.v<20?3.4:2.6)*dt);if(A.v<.02&&vt===0)A.v=0;A.d+=A.v*dt;$('aspd').textContent=Math.round(A.v*2);
+  A.v+=clamp(vt-A.v,-9*dt,(A.next===2?7.5:A.v<20?3.4:2.6)*dt);if(A.v<.02&&vt===0)A.v=0;A.d+=A.v*dt;$('aspd').textContent=Math.round(A.v*2);
+  /* passing stations: a wave, the name and a toot, no stop */
+  if(!A.done)APASS.forEach((q,i)=>{if(!A.said['p'+i]&&A.d>q[1]-70&&A.d<q[1]+40&&A.v>6){A.said['p'+i]=1;aBig('👋','Passing '+q[0],2600);say(q[0]+'. No stop here!');[311,370].forEach(f=>tone(f,.5,'sawtooth',.04));}});
+  if(!A.said.top&&A.v>70&&A.d>800&&A.d<1650){A.said.top=1;aBig('🚀','Top speed! FAST!',3600);say('Top speed! This is the fastest part of the whole trip.');}
+  {const m=$('amap'),me=m.lastChild;if(me){me.style.left=(clamp((A.d-AST[0].d)/(AEND-AST[0].d),0,1)*100)+'%';const ds=m.querySelectorAll('.dot');for(let i=0;i<ds.length;i++)ds[i].classList.toggle('on',A.d>=+ds[i].dataset.d-2);}}
   ace.mine.place(aP,A.d,1,.62);
   /* other trains come the other way on the second track */
   A.ai.forEach(a=>{a.d-=a.v*dt;if(a.d<A.d-500)a.d=A.d+1500+Math.random()*1400;if(a.d>AEND-40)a.d=AEND-40;a.c.place((d,o)=>aP(d,ATB),a.d,-1,.62);
