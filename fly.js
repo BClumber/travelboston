@@ -160,8 +160,8 @@ function updFly(dt){
 /* keyboard shortcuts for a computer */
 function flyKey(fn){return()=>{if(mode==='fly'&&F.phase==='fly')fn();};}
 keyTap.l=keyTap.p=flyKey(()=>$('auto').click());
-keyTap[' ']=()=>{if(mode==='fly'&&F.phase==='fly'){levF.set(0);msg('🛑 Power off',1500);}else if(mode==='train')$('horn').click();else if(mode==='tunnel')$('thorn').click();else if(mode==='acela')$('ahorn').click();};
+keyTap[' ']=()=>{if(mode==='fly'&&F.phase==='fly'){levF.set(0);msg('🛑 Power off',1500);}else if(mode==='train')$('horn').click();else if(mode==='tunnel')$('thorn').click();else if(mode==='acela')$('ahorn').click();else if(mode==='subway')$('shorn').click();};
 for(let i=0;i<=9;i++)keyTap[''+i]=flyKey(()=>levF.set(i===0?1:i/10));
-keyTap.c=keyTap.v=()=>{if(mode==='fly'&&F.phase!=='fly')return;if(mode==='fly'||mode==='train'||mode==='tunnel'||mode==='acela')$('camb').click();};keyTap.x=()=>{if(mode==='tunnel')$('txray').click();};keyTap.l=(o=>()=>{if(mode==='tunnel')$('tlight').click();else o();})(keyTap.l);
+keyTap.c=keyTap.v=()=>{if(mode==='fly'&&F.phase!=='fly')return;if(mode==='fly'||mode==='train'||mode==='tunnel'||mode==='acela'||mode==='subway')$('camb').click();};keyTap.x=()=>{if(mode==='tunnel')$('txray').click();};keyTap.l=(o=>()=>{if(mode==='tunnel')$('tlight').click();else o();})(keyTap.l);
 keyTap.Enter=()=>{if(mode==='fly'&&F.phase==='pick')$('pGo').click();else if(!$('again').classList.contains('hide'))$('again').click();};
 keyTap.h=keyTap['?']=()=>{$('keys').classList.toggle('open');};

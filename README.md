@@ -6,6 +6,7 @@ A train, flight and model-train simulator of the Boston area, made for a young t
 - **Fly** - a small prop plane, a private jet, an airliner or a helicopter from Logan to Norwood or Providence, with landmarks, roads and tunnels along the way.
 - **Fast train** - drive the Acela from Boston to Washington, D.C., stopping at Route 128, Providence, New Haven, New York, Philadelphia and Baltimore, past the shoreline, the big bridges and the Capitol.
 - **Tunnel drive** - drive a car, school bus or fire truck under the harbor to the airport, with spoken lessons for 3-4 year olds (down/up, dark/light, in/out, counting, colours) and a see-through side view of the water above.
+- **Subway** - pick the Red, Orange, Blue or Green Line by colour and drive it stop by stop: tunnels, tiled stations, the bridge over the Charles, the open cut, under the harbor to the airport and the beach, and the trolley on the street. Counts the stops out loud.
 - **Model trains** - build a table layout with hills, a mountain, scenery and a wild track option.
 
 ## Running it
